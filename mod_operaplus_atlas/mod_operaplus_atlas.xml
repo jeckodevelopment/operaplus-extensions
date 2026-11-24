@@ -3,6 +3,7 @@
   <name>MOD_OPERAPLUS_ATLAS</name><version>0.1.0</version><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
   <description>MOD_OPERAPLUS_ATLAS_XML_DESCRIPTION</description>
   <files><filename module="mod_operaplus_atlas">mod_operaplus_atlas.php</filename><folder>tmpl</folder><folder>language</folder></files>
+  <media destination="mod_operaplus_atlas" folder="media"><folder>css</folder></media>
   <config><fields name="params"><fieldset name="basic">
     <field name="mode" type="list" default="context" label="MOD_OPERAPLUS_ATLAS_MODE"><option value="context">MOD_OPERAPLUS_ATLAS_CONTEXT</option><option value="manual">MOD_OPERAPLUS_ATLAS_MANUAL</option></field>
     <field name="field_name" type="text" default="atlas-entities" label="MOD_OPERAPLUS_ATLAS_FIELD" showon="mode:context"/>

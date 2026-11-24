@@ -54,4 +54,6 @@ if (!$entities && $params->get('hide_empty', 1)) {
     $module->content = '';
     return;
 }
+$wa = Factory::getApplication()->getDocument()->getWebAssetManager();
+$wa->registerAndUseStyle('mod_operaplus_atlas', 'mod_operaplus_atlas/atlas.css');
 require ModuleHelper::getLayoutPath('mod_operaplus_atlas', $params->get('layout', 'default'));
