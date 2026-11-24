@@ -12,3 +12,6 @@ The automated tests exercise URL normalization, variant validation, HTML generat
 
 ## Visual acceptance
 The standalone Atlas and CTA styles implement the approved warm cream and pink palettes, serif headings, full-width burgundy buttons, envelope watermark and right-hand portrait. Container queries respond to module width rather than viewport alone. The CI fixture renders actual PHP layouts with a synthetic test portrait and captures six browser screenshots (desktop, tablet, mobile; light and dark surroundings). These are test fixtures, not a claim of pixel-perfect visual approval or live Joomla compatibility.
+
+## Native editor acceptance
+The Joomla lifecycle workflow also installs the cumulative package on a disposable Joomla 6 instance, enables the editorial plugin, logs into the administrator in Chromium, exercises all six templates through the native TinyMCE menu, checks cancellation and existing content preservation, and saves/reloads an interview to verify persistence. Screenshots are uploaded for review. This test does not use the production website.
