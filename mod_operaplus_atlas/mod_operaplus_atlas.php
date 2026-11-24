@@ -15,14 +15,17 @@ if (is_file($library)) {
     $app = Factory::getApplication();
     if ($params->get('mode', 'context') === 'manual') {
         $refs = preg_split('/[\s,]+/', trim((string) $params->get('references', '')), -1, PREG_SPLIT_NO_EMPTY);
-    } elseif ($app->input->getCmd('option') === 'com_content' && $app->input->getCmd('view') === 'article') {
-        $id = $app->input->getInt('id');
+    } elseif ($app->getInput()->getCmd('option') === 'com_content' && $app->getInput()->getCmd('view') === 'article') {
+        $id = $app->getInput()->getInt('id');
         if ($id > 0) {
             try {
-                $model = $app->bootComponent('com_content')->getMVCFactory()->createModel('Article', 'Site', ['ignore_request' => true]);
+                $model = $app->bootComponent('com_content')->getMVCFactory()->createModel('Article', 'Site', ['ignore_request' => false]);
                 $item = $model->getItem($id);
-                if ($item && in_array((int) $item->access, $app->getIdentity()->getAuthorisedViewLevels(), true)
-                    && (int) $item->state === 1) {
+                $now = Factory::getDate()->toSql();
+                if ($item && $item->params->get('access-view', false)
+                    && (int) $item->state === 1
+                    && (empty($item->publish_up) || $item->publish_up <= $now)
+                    && (empty($item->publish_down) || $item->publish_down >= $now)) {
                     foreach (FieldsHelper::getFields('com_content.article', $item, false) as $field) {
                         if ($field->type === 'operaplusatlas' && $field->name === $params->get('field_name', 'atlas-entities')
                             && in_array((int) $field->access, $app->getIdentity()->getAuthorisedViewLevels(), true)) {
