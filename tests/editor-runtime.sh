@@ -28,14 +28,21 @@ for i in {1..30}; do
   sleep 1
 done
 # Seed known public fixtures only in the disposable Joomla installation.
-cat > "$JOOMLA_ROOT/administrator/cache/operaplus-atlas-v1.json" <<'ATLAS_FIXTURE'
+cat > "$RUNNER_TEMP/atlas-fixture.json" <<'ATLAS_FIXTURE'
 {"schema_version":1,"source_revision":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","entities":[{"type":"opera","id":"ci-opera","title":"CI opera","subtitle":"CI composer","url":"https://opera.plus/atlas/opere/ci-opera/"},{"type":"composer","id":"ci-composer","title":"CI composer","url":null},{"type":"theatre","id":"ci-theatre","title":"CI theatre","url":"https://opera.plus/atlas/ci/theatre/"}]}
 ATLAS_FIXTURE
+export ATLAS_FIXTURE="$RUNNER_TEMP/atlas-fixture.json"
+export ATLAS_CACHE="$(php -r 'define("_JEXEC", 1); define("JPATH_BASE", $argv[1] . "/administrator"); require JPATH_BASE . "/includes/defines.php"; echo JPATH_CACHE . "/operaplus-atlas-v1.json";' "$JOOMLA_ROOT")"
+mkdir -p "$(dirname "$ATLAS_CACHE")"
+cp "$ATLAS_FIXTURE" "$ATLAS_CACHE"
+php -r 'require $argv[1] . "/libraries/operaplus/src/Index.php"; $refs = OperaPlus\Atlas\Index::load($argv[2], static function () { throw new RuntimeException("Unexpected cache miss"); }); if (!isset($refs["opera:ci-opera"], $refs["composer:ci-composer"], $refs["theatre:ci-theatre"])) { throw new RuntimeException("Fixture cache not readable by installed library"); } echo "Installed library verified fixture cache: " . $argv[2] . PHP_EOL;' "$JOOMLA_ROOT" "$ATLAS_CACHE"
 mysql --protocol=TCP -h 127.0.0.1 -u joomla_test joomla_test <<'SQL'
 INSERT INTO ci_fields (context,title,name,label,default_value,type,description,state,params,fieldparams,language,created_time,modified_time,access) VALUES
 ('com_content.article','CI Atlas entities','atlas-entities','CI Atlas entities','','operaplusatlas','',1,'{"display":0,"show_on":""}','{"multiple":1}','*',NOW(),NOW(),1),
 ('com_content.article','CI Atlas primary','atlas-primary','CI Atlas primary','','operaplusatlas','',1,'{"display":0,"show_on":""}','{"multiple":0}','*',NOW(),NOW(),1);
 SQL
 node tests/editor-runtime.mjs
+# Article saving may clean cache entries. Restore deterministic fixture for Atlas.
+cp "$ATLAS_FIXTURE" "$ATLAS_CACHE"
 node tests/atlas-field-runtime.mjs
 
