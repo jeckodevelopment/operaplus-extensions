@@ -6,6 +6,7 @@
   <config><fields name="params"><fieldset name="basic">
     <field name="mode" type="list" default="context" label="MOD_OPERAPLUS_ATLAS_MODE"><option value="context">MOD_OPERAPLUS_ATLAS_CONTEXT</option><option value="manual">MOD_OPERAPLUS_ATLAS_MANUAL</option></field>
     <field name="field_name" type="text" default="atlas-entities" label="MOD_OPERAPLUS_ATLAS_FIELD" showon="mode:context"/>
+    <field name="primary_field" type="text" default="atlas-primary" label="MOD_OPERAPLUS_ATLAS_PRIMARY" showon="mode:context"/>
     <field name="references" type="textarea" label="MOD_OPERAPLUS_ATLAS_REFERENCES" showon="mode:manual" filter="string"/>
     <field name="show_all" type="radio" default="0" label="MOD_OPERAPLUS_ATLAS_ALL" layout="joomla.form.field.radio.switcher"><option value="0">JNO</option><option value="1">JYES</option></field>
     <field name="hide_empty" type="radio" default="1" label="MOD_OPERAPLUS_ATLAS_HIDE" layout="joomla.form.field.radio.switcher"><option value="0">JNO</option><option value="1">JYES</option></field>

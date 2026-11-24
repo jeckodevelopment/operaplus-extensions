@@ -3,13 +3,13 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Helper\ModuleHelper;
-use Joomla\CMS\Language\Text;
 use Joomla\Component\Fields\Administrator\Helper\FieldsHelper;
 use OperaPlus\Atlas\Index;
 
 $library = JPATH_LIBRARIES . '/operaplus/src/Index.php';
 $entities = [];
 $refs = [];
+$primary = null;
 if (is_file($library)) {
     require_once $library;
     $app = Factory::getApplication();
@@ -27,15 +27,15 @@ if (is_file($library)) {
                     && (empty($item->publish_up) || $item->publish_up <= $now)
                     && (empty($item->publish_down) || $item->publish_down >= $now)) {
                     foreach (FieldsHelper::getFields('com_content.article', $item, false) as $field) {
-                        if ($field->type === 'operaplusatlas' && $field->name === $params->get('field_name', 'atlas-entities')
-                            && in_array((int) $field->access, $app->getIdentity()->getAuthorisedViewLevels(), true)) {
-                            $value = $field->rawvalue ?? $field->value ?? [];
-                            if (is_string($value)) {
-                                $decoded = json_decode($value, true);
-                                $value = is_array($decoded) ? $decoded : [$value];
-                            }
-                            $refs = is_array($value) ? $value : [];
-                            break;
+                        if ($field->type !== 'operaplusatlas'
+                            || !in_array((int) $field->access, $app->getIdentity()->getAuthorisedViewLevels(), true)) {
+                            continue;
+                        }
+                        $value = Index::references($field->rawvalue ?? $field->value ?? []);
+                        if ($field->name === $params->get('field_name', 'atlas-entities')) {
+                            $refs = $value;
+                        } elseif ($field->name === $params->get('primary_field', 'atlas-primary')) {
+                            $primary = $value[0] ?? null;
                         }
                     }
                 }
@@ -46,7 +46,7 @@ if (is_file($library)) {
     }
     if ($refs) {
         $index = Index::load(JPATH_CACHE . '/operaplus-atlas-v1.json');
-        $entities = Index::resolve($index, $refs, (bool) $params->get('show_all', 0));
+        $entities = Index::resolve($index, $refs, (bool) $params->get('show_all', 0), $primary);
     }
 }
 if (!$entities && $params->get('hide_empty', 1)) {

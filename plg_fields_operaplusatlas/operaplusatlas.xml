@@ -3,6 +3,6 @@
   <name>PLG_FIELDS_OPERAPLUSATLAS</name><version>0.1.0</version><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
   <description>PLG_FIELDS_OPERAPLUSATLAS_XML_DESCRIPTION</description>
   <namespace path="src">OperaPlus\Plugin\Fields\Atlas</namespace>
-  <files><folder plugin="operaplusatlas">services</folder><folder>src</folder><folder>tmpl</folder></files>
+  <files><folder plugin="operaplusatlas">services</folder><folder>src</folder><folder>params</folder><folder>tmpl</folder></files>
   <languages><language tag="en-GB">language/en-GB/plg_fields_operaplusatlas.ini</language><language tag="en-GB">language/en-GB/plg_fields_operaplusatlas.sys.ini</language><language tag="it-IT">language/it-IT/plg_fields_operaplusatlas.ini</language><language tag="it-IT">language/it-IT/plg_fields_operaplusatlas.sys.ini</language></languages>
 </extension>
