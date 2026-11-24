@@ -34,8 +34,25 @@ try {
     clearstatcache();
     check(Index::load($file, fn () => '{bad') === $index, 'Last known good lost');
     check(file_get_contents($file) === $raw, 'Invalid data overwritten cache');
+    check(Index::load($file, fn () => throw new RuntimeException('Must not retry')) === $index, 'Cooldown lost cached content');
+    $calls = 0;
+    Index::load($file, function () use (&$calls, $raw) { $calls++; return $raw; });
+    check($calls === 0, 'Failed refresh retried before cooldown');
+    $lock = fopen($file . '.lock', 'c+');
+    flock($lock, LOCK_EX);
+    Index::load($file, function () use (&$calls, $raw) { $calls++; return $raw; });
+    check($calls === 0, 'Concurrent refresh should not fetch');
+    flock($lock, LOCK_UN);
+    fclose($lock);
 } finally {
     if (is_file($file)) { unlink($file); }
+    if (is_file($file . '.lock')) { unlink($file . '.lock'); }
     rmdir($dir);
 }
+$second = $entity; $second['id'] = 'oa-w-2';
+$two = Index::decode(json_encode(['schema_version'=>1,'source_revision'=>str_repeat('a',40),'entities'=>[$entity,$second]], JSON_THROW_ON_ERROR));
+$refs = ['opera:oa-w-1','opera:oa-w-2'];
+check(Index::resolve($two, $refs, false, 'opera:oa-w-2')[0]['id'] === 'oa-w-2', 'Primary not selected');
+check(Index::resolve($two, ['opera:oa-w-1'], false, 'opera:oa-w-2')[0]['id'] === 'oa-w-1', 'Unassociated primary used');
+check(Index::references('["opera:oa-w-1","bad","opera:oa-w-1"]') === ['opera:oa-w-1'], 'Invalid refs retained');
 echo "Atlas index tests passed\n";

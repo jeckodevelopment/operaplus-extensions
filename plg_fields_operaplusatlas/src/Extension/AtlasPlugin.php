@@ -15,9 +15,17 @@ final class AtlasPlugin extends FieldsPlugin implements SubscriberInterface
         $node = parent::onCustomFieldsPrepareDom($field, $parent, $form);
         if (!$node) { return null; }
         $node->setAttribute('type', 'list');
-        $node->setAttribute('multiple', 'true');
+        $multiple = (bool) $field->fieldparams->get('multiple', 1);
+        $node->setAttribute('multiple', $multiple ? 'true' : 'false');
         $node->setAttribute('layout', 'joomla.form.field.list-fancy-select');
-        $node->setAttribute('filter', 'array');
+        $node->setAttribute('filter', $multiple ? 'array' : 'string');
+        $node->setAttribute('validate', 'options');
+        if (!$multiple) {
+            $option = $node->ownerDocument->createElement('option');
+            $option->setAttribute('value', '');
+            $option->appendChild($node->ownerDocument->createTextNode(\Joomla\CMS\Language\Text::_('JSELECT')));
+            $node->appendChild($option);
+        }
         $library = JPATH_LIBRARIES . '/operaplus/src/Index.php';
         $index = [];
         if (is_file($library)) {
