@@ -11,8 +11,8 @@ try {
   await page.goto(base+'/administrator/index.php');
   await page.locator('#mod-login-username').fill('ciadmin');
   await page.locator('#mod-login-password').fill('CiTestPassword-2026!');
-  await page.locator('button[type=submit]').first().click();
-  await page.waitForURL(url=>!url.searchParams.has('option') || url.searchParams.get('option')!=='com_login');
+  await page.getByRole('button',{name:'Log in',exact:true}).click();
+  await page.locator('#mod-login-username').waitFor({state:'detached',timeout:30000});
   await page.goto(base+'/administrator/index.php?option=com_content&task=article.add');
   await page.locator('#jform_title').fill('CI editorial template test');
   await page.waitForFunction(()=>window.tinymce?.get('jform_articletext')?.initialized, {timeout:30000});
