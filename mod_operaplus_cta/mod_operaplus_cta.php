@@ -6,13 +6,14 @@ use Joomla\CMS\HTML\HTMLHelper;
 use OperaPlus\Cta\Config;
 
 require_once __DIR__ . '/src/Config.php';
-$config = Config::from($params->toArray());
+$values = $params->toArray();
+if (!empty($values['image'])) {
+    $values['image'] = HTMLHelper::cleanImageURL((string) $values['image'])->url;
+}
+$config = Config::from($values);
 if ($config['heading'] === '' && $config['description'] === '' && ($config['button_text'] === '' || $config['button_url'] === '')) {
     $module->showtitle = 0;
     return;
-}
-if ($config['image'] !== '') {
-    $config['image'] = Config::safeUrl(HTMLHelper::cleanImageURL($config['image'])->url, true);
 }
 $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
 $wa->registerAndUseStyle('mod_operaplus_cta', 'mod_operaplus_cta/cta.css');

@@ -17,7 +17,7 @@ final class Config
         if (isset($parts['scheme'])) {
             return strtolower($parts['scheme']) === 'https' && !empty($parts['host']) ? $url : '';
         }
-        if (isset($parts['host']) || ($image && !preg_match('~^/?images/[^?#]+$~iD', $url))) {
+        if (isset($parts['host']) || ($image && preg_match('~(?:^|/)(?:\\.\\.?|%2e)(?:/|$)~i', $url)) || ($image && !preg_match('~^/?images/[^?#]+$~iD', $url))) {
             return '';
         }
         return $url;
