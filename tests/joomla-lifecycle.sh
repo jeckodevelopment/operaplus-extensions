@@ -33,7 +33,12 @@ test -f "$JOOMLA_ROOT/media/plg_editors-xtd_operaplus_templates/js/templates.js"
 for i in "${!packages[@]}"; do
   before="$(id_for "$i")"
   install_one "$i"
-  test "$(id_for "$i")" = "$before"
+  after="$(id_for "$i")"
+  [[ "$after" =~ ^[0-9]+$ ]]
+  # The native library installer replaces the registry entry on reinstall.
+  # Other extension types must retain their existing ID.
+  if [[ "${types[$i]}" != library ]]; then test "$after" = "$before"; fi
+  echo "Reinstalled ${packages[$i]}: $before -> $after"
 done
 for ((i=${#packages[@]}-1;i>=0;i--)); do
   id="$(id_for "$i")"
