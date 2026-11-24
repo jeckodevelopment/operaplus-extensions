@@ -20,7 +20,7 @@ final class AtlasPlugin extends FieldsPlugin implements SubscriberInterface
         $node->setAttribute('layout', 'joomla.form.field.list-fancy-select');
         $node->setAttribute('filter', $multiple ? 'array' : 'string');
         $node->setAttribute('validate', 'options');
-        if (!$multiple) {
+        if (!$field->required) {
             $option = $node->ownerDocument->createElement('option');
             $option->setAttribute('value', '');
             $option->appendChild($node->ownerDocument->createTextNode(\Joomla\CMS\Language\Text::_('JSELECT')));
