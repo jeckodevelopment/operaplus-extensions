@@ -54,7 +54,7 @@ download = ET.SubElement(ET.SubElement(update,"downloads"),"downloadurl",{"type"
 download.text = f"https://github.com/jeckodevelopment/operaplus-extensions/releases/download/v{version}/{filename}"
 ET.SubElement(update,"targetplatform",{"name":"joomla","version":r"6\..*"})
 ET.SubElement(update,"php_minimum").text = "8.3.0"
-ET.SubElement(update,"stability").text = "stable"
+ET.SubElement(ET.SubElement(update,"tags"),"tag").text = "alpha" if version.startswith("0.") else "stable"
 ET.indent(updates)
 ET.ElementTree(updates).write(DIST / "updates.xml",encoding="utf-8",xml_declaration=True)
 print("pkg_operaplus", version)
