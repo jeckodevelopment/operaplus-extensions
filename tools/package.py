@@ -8,13 +8,18 @@ DIST = ROOT / "dist"
 DIST.mkdir(exist_ok=True)
 packages = {"lib_operaplus": "operaplus.xml",
             "mod_operaplus_atlas": "mod_operaplus_atlas.xml",
-            "plg_fields_operaplusatlas": "operaplusatlas.xml"}
+            "plg_fields_operaplusatlas": "operaplusatlas.xml",
+            "mod_operaplus_cta": "mod_operaplus_cta.xml",
+            "plg_editorsxtd_operaplus_templates": "operaplus_templates.xml"}
 for name, manifest in packages.items():
     folder = ROOT / name
     tree = ET.parse(folder / manifest).getroot()
     assert tree.tag == "extension"
     for item in tree.findall("./files/*") + tree.findall("./languages/language"):
         assert (folder / item.text.strip()).exists(), (name, item.text)
+    for media in tree.findall("./media"):
+        for item in media:
+            assert (folder / media.attrib["folder"] / item.text.strip()).exists(), (name, item.text)
     version = tree.findtext("version")
     assert version == "0.1.0"
     with ZipFile(DIST / f"{name}-{version}.zip", "w", ZIP_DEFLATED) as archive:

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="module" client="site" method="upgrade">
+  <name>MOD_OPERAPLUS_CTA</name><version>0.1.0</version><author>Jecko Development</author><license>GNU General Public License version 2 or later</license><description>MOD_OPERAPLUS_CTA_XML_DESCRIPTION</description>
+  <files><filename module="mod_operaplus_cta">mod_operaplus_cta.php</filename><folder>src</folder><folder>tmpl</folder></files>
+  <media destination="mod_operaplus_cta" folder="media"><folder>css</folder></media>
+  <languages><language tag="en-GB">language/en-GB/mod_operaplus_cta.ini</language><language tag="en-GB">language/en-GB/mod_operaplus_cta.sys.ini</language><language tag="it-IT">language/it-IT/mod_operaplus_cta.ini</language><language tag="it-IT">language/it-IT/mod_operaplus_cta.sys.ini</language></languages>
+  <config><fields name="params"><fieldset name="basic">
+    <field name="variant" type="list" default="light" label="MOD_OPERAPLUS_CTA_VARIANT"><option value="light">MOD_OPERAPLUS_CTA_LIGHT</option><option value="dark">MOD_OPERAPLUS_CTA_DARK</option><option value="horizontal">MOD_OPERAPLUS_CTA_HORIZONTAL</option><option value="atlas">MOD_OPERAPLUS_CTA_ATLAS</option></field>
+    <field name="heading" type="text" filter="string" label="MOD_OPERAPLUS_CTA_HEADING"/>
+    <field name="description" type="textarea" filter="string" rows="4" label="MOD_OPERAPLUS_CTA_TEXT"/>
+    <field name="icon" type="list" default="envelope" label="MOD_OPERAPLUS_CTA_ICON"><option value="none">JNONE</option><option value="envelope">MOD_OPERAPLUS_CTA_ENVELOPE</option><option value="book">MOD_OPERAPLUS_CTA_BOOK</option></field>
+    <field name="watermark" type="radio" default="1" label="MOD_OPERAPLUS_CTA_WATERMARK" layout="joomla.form.field.radio.switcher"><option value="0">JNO</option><option value="1">JYES</option></field>
+    <field name="image" type="media" directory="images" label="MOD_OPERAPLUS_CTA_IMAGE"/>
+    <field name="image_alt" type="text" filter="string" label="MOD_OPERAPLUS_CTA_ALT"/>
+    <field name="button_text" type="text" filter="string" label="MOD_OPERAPLUS_CTA_BUTTON"/>
+    <field name="button_url" type="text" filter="string" label="MOD_OPERAPLUS_CTA_URL"/>
+    <field name="cache" type="hidden" default="0"/>
+  </fieldset><fieldset name="advanced"><field name="layout" type="modulelayout" label="JFIELD_ALT_LAYOUT_LABEL"/><field name="moduleclass_sfx" type="text" label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"/></fieldset></fields></config>
+</extension>

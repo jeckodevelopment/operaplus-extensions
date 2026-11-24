@@ -16,12 +16,15 @@ jobs:
           php-version: '8.3'
           coverage: none
       - name: PHP syntax
-        run: find lib_operaplus mod_operaplus_atlas plg_fields_operaplusatlas tests -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find lib_operaplus mod_operaplus_atlas plg_fields_operaplusatlas mod_operaplus_cta plg_editorsxtd_operaplus_templates tests -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Unit tests
-        run: php tests/index.php
+        run: |
+          php tests/index.php
+          php tests/cta.php
+          node tests/editor-templates.mjs
       - name: Validate manifests and build ZIPs
         run: python3 tools/package.py
       - uses: actions/upload-artifact@v4
         with:
-          name: operaplus-atlas-preview
+          name: operaplus-extensions-preview
           path: dist/*.zip
