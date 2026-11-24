@@ -21,13 +21,10 @@ try {
   const picker=page.waitForEvent('filechooser');
   await page.locator('#select-file-button').click();
   const chooser=await picker;
-  const response=page.waitForResponse(r=>r.url().includes('task=install.ajax_upload')&&r.request().method()==='POST',{timeout:60000});
+  // File picker uses the regular multipart form, not drag-and-drop AJAX.
   await chooser.setFiles(zip);
-  const uploaded=await response;
-  assert.ok(uploaded.ok(),'Upload HTTP '+uploaded.status());
-  const result=await uploaded.json();
-  assert.equal(result.success,true,JSON.stringify(result));
-  await page.waitForLoadState('networkidle');
+  await page.getByText('Installation of the package was successful.',{exact:true}).waitFor({state:'visible',timeout:60000});
+  await page.waitForLoadState('domcontentloaded');
   await page.screenshot({path:'dist/web-upload/result.png',fullPage:true});
   console.log('Native Joomla web upload accepted '+zip);
 } catch(error) {
