@@ -9,8 +9,8 @@ const errors=[];
 page.on('pageerror', e=>errors.push(String(e)));
 try {
   await page.goto(base+'/administrator/index.php');
-  await page.locator('#mod-login-username').fill('ciadmin');
-  await page.locator('#mod-login-password').fill('CiTestPassword-2026!');
+  await page.locator('#mod-login-username').fill(process.env.JOOMLA_TEST_USER);
+  await page.locator('#mod-login-password').fill(process.env.JOOMLA_TEST_PASSWORD);
   await page.getByRole('button',{name:'Log in',exact:true}).click();
   await page.locator('#mod-login-username').waitFor({state:'detached',timeout:30000});
   await page.getByText('Home Dashboard',{exact:true}).first().waitFor({state:'visible'});
@@ -27,7 +27,7 @@ try {
   const getContent = () => page.evaluate(()=>window.tinymce.get('jform_articletext').getContent());
   const openTemplates = async () => {
     // Use the actual TinyMCE menu, not a simulated editor adapter.
-    await page.locator('.tox-menubar').getByText('CMS Content',{exact:true}).click();
+    await page.getByText('CMS Content',{exact:true}).click();
     await page.getByRole('menuitem',{name:'Opera+ templates',exact:true}).click();
     await page.locator('dialog[open] select').waitFor();
   };
@@ -57,7 +57,14 @@ try {
   await page.locator('dialog[open]').getByRole('button',{name:'Insert',exact:true}).click();
   await page.waitForFunction(()=>window.tinymce.get('jform_articletext').getContent().includes('op-interview-question'));
   await page.screenshot({path:'dist/editor-runtime/interview-in-editor.png'});
-  await page.locator('#toolbar-apply button, #toolbar-apply').first().click();
+  // Select the existing content category in the native form before saving.
+  await page.locator('#jform_catid').evaluate(select => {
+    const option = Array.from(select.options).find(o => Number(o.value)>0 && !o.disabled);
+    if (!option) throw new Error('No available content category');
+    select.value=option.value;
+    select.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  await page.getByRole('button',{name:'Save',exact:true}).click();
   await page.waitForURL(url=>url.searchParams.get('layout')==='edit'&&Number(url.searchParams.get('id'))>0,{timeout:30000});
   await page.reload();
   await page.waitForFunction(()=>window.tinymce?.get('jform_articletext')?.initialized);
@@ -67,6 +74,7 @@ try {
 } catch(e) {
   await page.screenshot({path:'dist/editor-runtime/failure.png',fullPage:true}).catch(()=>{});
   console.error('Page URL:',page.url(),'Browser errors:',errors);
+  console.error('Editor toolbar:',await page.locator('.tox-editor-header').innerText().catch(()=>''));
   console.error((await page.locator('body').innerText()).slice(0,2500));
   throw e;
 } finally {await browser.close();}
