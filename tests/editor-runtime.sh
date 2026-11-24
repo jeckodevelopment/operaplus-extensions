@@ -28,7 +28,7 @@ for i in {1..30}; do
   sleep 1
 done
 # Seed known public fixtures only in the disposable Joomla installation.
-cat > "$JOOMLA_ROOT/cache/operaplus-atlas-v1.json" <<'ATLAS_FIXTURE'
+cat > "$JOOMLA_ROOT/administrator/cache/operaplus-atlas-v1.json" <<'ATLAS_FIXTURE'
 {"schema_version":1,"source_revision":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","entities":[{"type":"opera","id":"ci-opera","title":"CI opera","subtitle":"CI composer","url":"https://opera.plus/atlas/opere/ci-opera/"},{"type":"composer","id":"ci-composer","title":"CI composer","url":null},{"type":"theatre","id":"ci-theatre","title":"CI theatre","url":"https://opera.plus/atlas/ci/theatre/"}]}
 ATLAS_FIXTURE
 mysql --protocol=TCP -h 127.0.0.1 -u joomla_test joomla_test <<'SQL'

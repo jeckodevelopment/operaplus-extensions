@@ -26,13 +26,16 @@ try {
   await primary.waitFor({state:'attached'});
   assert.equal(await multiple.evaluate(el=>el.multiple),true);
   assert.equal(await primary.evaluate(el=>el.multiple),false);
-  const choose=async (field,values)=>field.evaluate((el,values)=>{
-    for(const option of el.options) option.selected=values.includes(option.value);
-    el.dispatchEvent(new Event('change',{bubbles:true}));
-  },values);
-  const values=async field=>field.evaluate(el=>Array.from(el.selectedOptions).map(o=>o.value));
+  const choose=async (field,values)=>{
+    await field.evaluate((el,values)=>{
+      const fancy=el.closest('joomla-field-fancy-select');
+      if (!fancy?.choicesInstance) throw new Error('Fancy select not initialized');
+      fancy.value=el.multiple?values:values[0];
+    },values);
+  };
+  const values=async field=>field.evaluate(el=>Array.from(el.selectedOptions).map(o=>o.value).filter(Boolean));
   const assertOptions=async field=>{
-    const options=await field.evaluate(el=>Array.from(el.options).map(o=>o.value));
+    const options=await field.evaluate(el=>el.closest('joomla-field-fancy-select').choicesInstance.config.choices.map(o=>String(o.value)));
     for(const ref of ['opera:ci-opera','composer:ci-composer','theatre:ci-theatre']) assert.ok(options.includes(ref),'Missing option '+ref);
   };
   await assertOptions(multiple);
@@ -44,8 +47,12 @@ try {
     select.dispatchEvent(new Event('change',{bubbles:true}));
   });
   await page.waitForLoadState('networkidle');
+  await page.getByRole('tab',{name:'Fields',exact:true}).click();
   await choose(multiple,['opera:ci-opera','composer:ci-composer']);
   await choose(primary,['composer:ci-composer']);
+  assert.deepEqual((await values(multiple)).sort(),['composer:ci-composer','opera:ci-opera']);
+  assert.deepEqual(await values(primary),['composer:ci-composer']);
+  await page.getByRole('tab',{name:'Content',exact:true}).click();
   await page.evaluate(()=>window.tinymce.get('jform_articletext').setContent('<p>Atlas integration test</p>'));
   await page.getByRole('button',{name:'Save',exact:true}).click();
   await page.waitForURL(url=>url.searchParams.get('layout')==='edit'&&Number(url.searchParams.get('id'))>0,{timeout:30000});
@@ -57,7 +64,7 @@ try {
   // Simulate a catalogue refresh that removes a previously selected entity.
   const {writeFileSync}=await import('node:fs');
   const {join}=await import('node:path');
-  const cache=join(process.env.JOOMLA_ROOT,'cache','operaplus-atlas-v1.json');
+  const cache=join(process.env.JOOMLA_ROOT,'administrator','cache','operaplus-atlas-v1.json');
   writeFileSync(cache,JSON.stringify({schema_version:1,source_revision:'b'.repeat(40),entities:[{type:'opera',id:'ci-opera',title:'CI opera',url:'https://opera.plus/atlas/opere/ci-opera/'}]}));
   await page.goto(url);
   await multiple.waitFor({state:'attached'});
