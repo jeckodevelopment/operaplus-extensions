@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 — development preview
+- Fix optional empty Atlas associations in article forms while retaining native options validation.
+- Add native browser acceptance for package upload, editorial templates and Atlas field persistence.
+
 ## 0.3.0 — development preview
 - Native cumulative package, centralized stable update feed generation, gated tagged-release workflow.
 - Automated Joomla 6 installation, reinstall and removal tests for individual and cumulative packages.
