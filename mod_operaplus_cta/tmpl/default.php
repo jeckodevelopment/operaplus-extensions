@@ -9,7 +9,7 @@ $icon = static function (string $name): string {
     };
 };
 ?>
-<div class="op-cta op-cta--<?php echo $e($config['variant']); ?>">
+<div class="op-cta-shell"><div class="op-cta op-cta--<?php echo $e($config['variant']); ?><?php echo $config['image'] !== '' ? ' op-cta--has-image' : ''; ?>">
     <?php if ($config['watermark'] && $config['icon'] !== 'none') : ?><span class="op-cta__watermark" aria-hidden="true"><?php echo $icon($config['icon']); ?></span><?php endif; ?>
     <div class="op-cta__body">
         <?php if ($config['icon'] !== 'none') : ?><span class="op-cta__icon"><?php echo $icon($config['icon']); ?></span><?php endif; ?>
@@ -18,4 +18,5 @@ $icon = static function (string $name): string {
     </div>
     <?php if ($config['image'] !== '') : ?><img class="op-cta__image" loading="lazy" decoding="async" src="<?php echo $e($config['image']); ?>" alt="<?php echo $e($config['image_alt']); ?>"><?php endif; ?>
     <?php if ($config['button_text'] !== '' && $config['button_url'] !== '') : ?><a class="op-cta__button" href="<?php echo $e($config['button_url']); ?>"><?php echo $e($config['button_text']); ?></a><?php endif; ?>
+</div>
 </div>

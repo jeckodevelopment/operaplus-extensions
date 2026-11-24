@@ -1,4 +1,4 @@
-# Atlas integration (preview 0.1.0)
+# Atlas integration (preview 0.2.0)
 
 Install lib_operaplus first, then the field plugin and the module. Enable the field plugin; create an article custom field of type Opera+ Atlas with name atlas-entities. Disable automatic display of the field in content. Select entities using the multiple-choice search control. Only type:id references are stored. Manual mode accepts type:id references separated by spaces or newlines. In contextual mode the module resolves the current published article and authorized field, and returns no markup when no valid entity exists (default). The template must also suppress empty module chrome and collapse empty sidebars; this is a separate template acceptance test. For explicit primary selection, create a second optional field named atlas-primary of the same type, with multiple selection disabled. Only a primary reference also present in atlas-entities is honored. Otherwise the first valid association is used. Composer links are omitted when no route exists.
 

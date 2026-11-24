@@ -1,0 +1,17 @@
+/* Standalone editorial card; no dependency on the magazine template. */
+.op-atlas-module{display:grid;gap:1rem;container-type:inline-size}
+.op-atlas-entity{--atlas-bg:#f3ece1;--atlas-ink:#42252c;--atlas-accent:#632b3a;display:grid;grid-template-columns:minmax(0,1fr);gap:1rem;align-items:center;isolation:isolate;overflow:hidden;padding:1.35rem;background:var(--atlas-bg);color:var(--atlas-ink)}
+.op-atlas-entity--portrait{grid-template-columns:minmax(0,1fr) minmax(0,.78fr)}
+.op-atlas-copy{min-width:0}
+.op-atlas-kicker{margin:0 0 .75rem;color:var(--atlas-accent);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em}
+.op-atlas-heading{font-family:Georgia,serif;font-size:clamp(1.45rem,5.5cqi,2rem);line-height:1.12;color:var(--atlas-accent);margin:0 0 .65rem;overflow-wrap:anywhere}
+.op-atlas-subtitle{margin:0;line-height:1.5;overflow-wrap:anywhere}
+.op-atlas-image{margin:0;min-width:0;align-self:end}
+.op-atlas-image img{display:block;width:100%;height:auto;max-height:12rem;object-fit:contain;object-position:center bottom;mix-blend-mode:multiply}
+.op-atlas-link{grid-column:1/-1;display:block;padding:.85rem 1rem;background:var(--atlas-accent);color:#fff;text-align:center;font-weight:700;text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.op-atlas-link:hover{color:#fff;text-decoration:underline}
+.op-atlas-link:focus-visible,.op-atlas-credit a:focus-visible{outline:2px solid var(--atlas-accent);outline-offset:3px}
+.op-atlas-credit{grid-column:1/-1;margin:0;font-size:.72rem;line-height:1.5;overflow-wrap:anywhere}
+.op-atlas-credit a{color:var(--atlas-ink);text-decoration:underline}
+.op-atlas-empty{margin:0}
+@container(max-width:260px){.op-atlas-entity--portrait{grid-template-columns:minmax(0,1fr)}.op-atlas-image img{max-height:9rem}}

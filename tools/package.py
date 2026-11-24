@@ -21,7 +21,7 @@ for name, manifest in packages.items():
         for item in media:
             assert (folder / media.attrib["folder"] / item.text.strip()).exists(), (name, item.text)
     version = tree.findtext("version")
-    assert version == "0.1.0"
+    assert version == "0.2.0"
     with ZipFile(DIST / f"{name}-{version}.zip", "w", ZIP_DEFLATED) as archive:
         for file in sorted(folder.rglob("*")):
             if file.is_file():
