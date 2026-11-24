@@ -13,9 +13,13 @@ try {
   await page.locator('#mod-login-password').fill('CiTestPassword-2026!');
   await page.getByRole('button',{name:'Log in',exact:true}).click();
   await page.locator('#mod-login-username').waitFor({state:'detached',timeout:30000});
+  await page.getByText('Home Dashboard',{exact:true}).first().waitFor({state:'visible'});
+  await page.waitForLoadState('networkidle');
+  await page.goto(base+'/administrator/index.php?option=com_content&filter=');
+  await page.waitForLoadState('networkidle');
   await page.goto(base+'/administrator/index.php?option=com_content&task=article.add');
   await page.locator('#jform_title').fill('CI editorial template test');
-  await page.waitForFunction(()=>window.tinymce?.get('jform_articletext')?.initialized, {timeout:30000});
+  await page.waitForFunction(()=>window.tinymce?.get('jform_articletext')?.initialized, null, {timeout:30000});
   const setContent = async html => page.evaluate(html=>{
     const ed=window.tinymce.get('jform_articletext');
     ed.setContent(html); ed.focus(); ed.selection.select(ed.getBody(),true); ed.selection.collapse(false);
