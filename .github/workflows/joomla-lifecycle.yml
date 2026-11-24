@@ -1,5 +1,6 @@
 name: Joomla 6 installation lifecycle
 on:
+  workflow_call:
   pull_request:
   push:
     branches: [main]
