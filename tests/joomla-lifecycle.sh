@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Ephemeral CI database only. Never run against a live Joomla instance.
+set -euo pipefail
+: "${JOOMLA_ROOT:?Set JOOMLA_ROOT to the isolated test installation}"
+test -f "$JOOMLA_ROOT/configuration.php"
+packages=(lib_operaplus plg_fields_operaplusatlas mod_operaplus_atlas mod_operaplus_cta plg_editorsxtd_operaplus_templates)
+elements=(operaplus operaplusatlas mod_operaplus_atlas mod_operaplus_cta operaplus_templates)
+types=(library plugin module module plugin)
+groups=("" fields "" "" editors-xtd)
+root="$(pwd)"
+db() { mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "$1"; }
+id_for() { db "SELECT extension_id FROM ci_extensions WHERE element='${elements[$1]}' AND type='${types[$1]}' AND folder='${groups[$1]}'"; }
+install_one() {
+  local i="$1"
+  local zips=("$root/dist/${packages[$i]}"-*.zip)
+  test "${#zips[@]}" -eq 1
+  test -f "${zips[0]}"
+  (cd "$JOOMLA_ROOT" && php cli/joomla.php extension:install --no-interaction --path="${zips[0]}")
+}
+for i in "${!packages[@]}"; do
+  install_one "$i"
+  id="$(id_for "$i")"
+  [[ "$id" =~ ^[0-9]+$ ]]
+  echo "Installed ${packages[$i]} as extension $id"
+done
+test -f "$JOOMLA_ROOT/libraries/operaplus/src/Index.php"
+test -f "$JOOMLA_ROOT/modules/mod_operaplus_atlas/mod_operaplus_atlas.php"
+test -f "$JOOMLA_ROOT/modules/mod_operaplus_cta/mod_operaplus_cta.php"
+test -f "$JOOMLA_ROOT/plugins/fields/operaplusatlas/services/provider.php"
+test -f "$JOOMLA_ROOT/plugins/editors-xtd/operaplus_templates/services/provider.php"
+test -f "$JOOMLA_ROOT/media/mod_operaplus_cta/css/cta.css"
+test -f "$JOOMLA_ROOT/media/plg_editors-xtd_operaplus_templates/js/templates.js"
+for i in "${!packages[@]}"; do
+  before="$(id_for "$i")"
+  install_one "$i"
+  test "$(id_for "$i")" = "$before"
+done
+for ((i=${#packages[@]}-1;i>=0;i--)); do
+  id="$(id_for "$i")"
+  (cd "$JOOMLA_ROOT" && php cli/joomla.php extension:remove "$id" --no-interaction)
+  test -z "$(id_for "$i")"
+done
+echo "All five extensions installed, reinstalled and removed using Joomla's native installer."
