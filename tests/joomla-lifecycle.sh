@@ -46,3 +46,19 @@ for ((i=${#packages[@]}-1;i>=0;i--)); do
   test -z "$(id_for "$i")"
 done
 echo "All five extensions installed, reinstalled and removed using Joomla's native installer."
+
+# Test the cumulative package separately from the individual extensions.
+version="$(cat VERSION)"
+bundle="$root/dist/pkg_operaplus-$version.zip"
+(cd "$JOOMLA_ROOT" && php cli/joomla.php extension:install --no-interaction --path="$bundle")
+pkg_id="$(db "SELECT extension_id FROM ci_extensions WHERE element='pkg_operaplus' AND type='package'")"
+[[ "$pkg_id" =~ ^[0-9]+$ ]]
+for i in "${!packages[@]}"; do
+  id="$(id_for "$i")"
+  [[ "$id" =~ ^[0-9]+$ ]]
+  test "$(db "SELECT package_id FROM ci_extensions WHERE extension_id=$id")" = "$pkg_id"
+done
+test -f "$JOOMLA_ROOT/media/mod_operaplus_atlas/css/atlas.css"
+(cd "$JOOMLA_ROOT" && php cli/joomla.php extension:remove "$pkg_id" --no-interaction)
+for i in "${!packages[@]}"; do test -z "$(id_for "$i")"; done
+echo "Cumulative package installed with all five children and removed cleanly."

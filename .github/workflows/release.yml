@@ -1,0 +1,39 @@
+name: Publish tagged release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  quality:
+    uses: ./.github/workflows/ci.yml
+  lifecycle:
+    uses: ./.github/workflows/joomla-lifecycle.yml
+  publish:
+    needs: [quality, lifecycle]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify tag and build
+        run: |
+          set -euo pipefail
+          version="$(cat VERSION)"
+          test "$GITHUB_REF_NAME" = "v$version"
+          git fetch origin main
+          git merge-base --is-ancestor HEAD origin/main
+          python3 tools/package.py
+      - name: Publish immutable version assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(cat VERSION)"
+          if [[ "$version" == 0.* ]]; then
+            gh release create "$GITHUB_REF_NAME" dist/*.zip --verify-tag --prerelease --latest=false --title "Opera+ Extensions $version (preview)" --generate-notes
+          else
+            gh release create "$GITHUB_REF_NAME" dist/*.zip dist/updates.xml --verify-tag --latest --title "Opera+ Extensions $version" --generate-notes
+          fi

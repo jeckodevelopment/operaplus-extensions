@@ -1,5 +1,6 @@
 name: Joomla extension CI
 on:
+  workflow_call:
   push:
     branches: [main]
   pull_request:
@@ -34,7 +35,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: operaplus-extensions-preview
-          path: dist/*.zip
+          path: |
+            dist/*.zip
+            dist/updates.xml
       - uses: actions/upload-artifact@v4
         if: always()
         with:
