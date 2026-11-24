@@ -1,4 +1,4 @@
-# Editorial extensions (preview 0.1.0)
+# Editorial extensions (preview 0.2.0)
 
 ## CTA module
 
@@ -9,3 +9,6 @@ Install mod_operaplus_cta, create a site module and select light newsletter, dar
 Install and enable the editors-xtd plugin. In the administrator article editor select Opera+ templates, choose Article, Interview, Review, Longform, Dossier or News, and insert the editable HTML at the selection/caret. Cancel leaves the article unchanged. The plugin uses the Joomla 6 editor button API; TinyMCE toolbar configuration must allow editor-xtd buttons. Native content fields and publication workflow are unchanged. No H1, embedded scripts, external assets or fake author/cast values are inserted. Editorial classes require template styles for their final presentation.
 
 The automated tests exercise URL normalization, variant validation, HTML generation and escaping. Actual installation, the dialog in TinyMCE and responsive/dark-mode visual acceptance require Joomla 6 browser testing. No production deployment or stable release yet.
+
+## Visual acceptance
+The standalone Atlas and CTA styles implement the approved warm cream and pink palettes, serif headings, full-width burgundy buttons, envelope watermark and right-hand portrait. Container queries respond to module width rather than viewport alone. The CI fixture renders actual PHP layouts with a synthetic test portrait and captures six browser screenshots (desktop, tablet, mobile; light and dark surroundings). These are test fixtures, not a claim of pixel-perfect visual approval or live Joomla compatibility.
