@@ -1,0 +1,7 @@
+# Atlas integration (preview 0.1.0)
+
+Install lib_operaplus first, then the field plugin and the module. Enable the field plugin; create an article custom field of type Opera+ Atlas with name atlas-entities. Disable automatic display of the field in content. Select entities using the multiple-choice search control. Only type:id references are stored. Manual mode accepts type:id references separated by spaces or newlines. In contextual mode the module resolves the current published article and authorized field, and returns no markup when no valid entity exists (default). The template must also suppress empty module chrome and collapse empty sidebars; this is a separate template acceptance test. Multiple-choice order is the saved Joomla order; explicit primary selection is not yet provided. Composer links are omitted when no route exists.
+
+Fixed HTTPS endpoint, 5-second HTTP timeout, maximum 4 MiB, redirects disabled, validated last-known-good cache under Joomla cache directory. If PHP URL streams are unavailable, cached content is retained. Images with invalid attribution or links are omitted. No installation on a live Joomla instance has yet been verified.
+
+CI produces preview ZIPs for all three extensions. Stable release, update servers, install/upgrade and browser integration tests are pending. No public site changes in this PR.
