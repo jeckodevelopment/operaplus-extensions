@@ -15,7 +15,12 @@ try {
       const bounds = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth > innerWidth,
         cards: [...document.querySelectorAll('.op-cta,.op-atlas-entity')].map(card => ({
-          overflow:card.scrollWidth > card.clientWidth + 1,
+          // Decorative watermark intentionally extends beyond the card and is clipped.
+          // Only content and interactive elements must stay within its bounds.
+          overflow:[...card.querySelectorAll('.op-cta__body,.op-cta__heading,.op-cta__text,.op-cta__image,.op-cta__button,.op-atlas-copy,.op-atlas-heading,.op-atlas-subtitle,.op-atlas-image,.op-atlas-link,.op-atlas-credit')].some(el=>{
+            const a=el.getBoundingClientRect(), b=card.getBoundingClientRect();
+            return a.width>0 && (a.left<b.left-1 || a.right>b.right+1 || el.scrollWidth>el.clientWidth+1);
+          }),
           background:getComputedStyle(card).backgroundColor,
         }))
       }));
