@@ -27,4 +27,15 @@ for i in {1..30}; do
   if curl -fsS http://127.0.0.1:8080/administrator/index.php >/dev/null; then break; fi
   sleep 1
 done
+# Seed known public fixtures only in the disposable Joomla installation.
+cat > "$JOOMLA_ROOT/cache/operaplus-atlas-v1.json" <<'ATLAS_FIXTURE'
+{"schema_version":1,"source_revision":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","entities":[{"type":"opera","id":"ci-opera","title":"CI opera","subtitle":"CI composer","url":"https://opera.plus/atlas/opere/ci-opera/"},{"type":"composer","id":"ci-composer","title":"CI composer","url":null},{"type":"theatre","id":"ci-theatre","title":"CI theatre","url":"https://opera.plus/atlas/ci/theatre/"}]}
+ATLAS_FIXTURE
+mysql --protocol=TCP -h 127.0.0.1 -u joomla_test joomla_test <<'SQL'
+INSERT INTO ci_fields (context,title,name,label,default_value,type,description,state,params,fieldparams,language,created_time,modified_time,access) VALUES
+('com_content.article','CI Atlas entities','atlas-entities','CI Atlas entities','','operaplusatlas','',1,'{"display":0,"show_on":""}','{"multiple":1}','*',NOW(),NOW(),1),
+('com_content.article','CI Atlas primary','atlas-primary','CI Atlas primary','','operaplusatlas','',1,'{"display":0,"show_on":""}','{"multiple":0}','*',NOW(),NOW(),1);
+SQL
 node tests/editor-runtime.mjs
+node tests/atlas-field-runtime.mjs
+
