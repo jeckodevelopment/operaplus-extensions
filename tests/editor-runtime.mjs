@@ -27,7 +27,7 @@ try {
   const getContent = () => page.evaluate(()=>window.tinymce.get('jform_articletext').getContent());
   const openTemplates = async () => {
     // Use the actual TinyMCE menu, not a simulated editor adapter.
-    await page.locator('.tox-toolbar button[aria-label="CMS Content"], .tox-toolbar button[title="CMS Content"], .tox-toolbar button:has-text("CMS Content"), .tox-toolbar-overlord button[aria-label="CMS Content"]').first().click();
+    await page.locator('.tox-menubar').getByText('CMS Content',{exact:true}).click();
     await page.getByRole('menuitem',{name:'Opera+ templates',exact:true}).click();
     await page.locator('dialog[open] select').waitFor();
   };
