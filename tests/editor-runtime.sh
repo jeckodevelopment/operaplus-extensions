@@ -7,6 +7,9 @@ version="$(cat VERSION)"
 mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=1 WHERE type='plugin' AND folder IN ('fields','editors-xtd') AND element IN ('operaplus_templates','operaplusatlas');"
 # Joomla's Uri::base() treats cli-server as CLI; set an explicit site base
 # only in the disposable CI installation to avoid /administrator/media URLs.
+# Disable first-run onboarding and statistics only in the disposable database.
+# Guided tours can redirect the browser away from the page being tested.
+mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=0 WHERE type='plugin' AND folder='system' AND element IN ('guidedtours','stats');"
 php -r '
     $path = $argv[1];
     $config = file_get_contents($path);
