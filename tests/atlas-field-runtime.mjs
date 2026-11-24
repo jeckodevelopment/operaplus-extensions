@@ -1,0 +1,88 @@
+import assert from 'node:assert/strict';
+import { chromium } from 'playwright';
+import { mkdirSync, copyFileSync, writeFileSync } from 'node:fs';
+const base = 'http://127.0.0.1:8080';
+const browser = await chromium.launch({headless:true});
+mkdirSync('dist/editor-runtime',{recursive:true});
+const page = await browser.newPage({viewport:{width:1440,height:1000}});
+const errors=[];
+page.on('pageerror', e=>errors.push(String(e)));
+try {
+  await page.goto(base+'/administrator/index.php');
+  await page.locator('#mod-login-username').fill(process.env.JOOMLA_TEST_USER);
+  await page.locator('#mod-login-password').fill(process.env.JOOMLA_TEST_PASSWORD);
+  await page.getByRole('button',{name:'Log in',exact:true}).click();
+  await page.locator('#mod-login-username').waitFor({state:'detached',timeout:30000});
+  await page.getByText('Home Dashboard',{exact:true}).first().waitFor({state:'visible'});
+  await page.waitForLoadState('networkidle');
+  await page.goto(base+'/administrator/index.php?option=com_content&filter=');
+  await page.waitForLoadState('networkidle');
+  copyFileSync(process.env.ATLAS_FIXTURE,process.env.ATLAS_CACHE);
+  await page.goto(base+'/administrator/index.php?option=com_content&task=article.add');
+  await page.locator('#jform_title').fill('CI Atlas field test');
+  await page.waitForFunction(()=>window.tinymce?.get('jform_articletext')?.initialized, null, {timeout:30000});
+  const multiple=page.locator('select[name="jform[com_fields][atlas-entities][]"]');
+  const primary=page.locator('select[name="jform[com_fields][atlas-primary]"]');
+  await multiple.waitFor({state:'attached'});
+  await primary.waitFor({state:'attached'});
+  await page.getByRole('tab',{name:'Fields',exact:true}).click();
+  assert.equal(await multiple.evaluate(el=>el.multiple),true);
+  assert.equal(await primary.evaluate(el=>el.multiple),false);
+  const choose=async (field,values)=>{
+    await field.evaluate((el,values)=>{
+      const fancy=el.closest('joomla-field-fancy-select');
+      if (!fancy?.choicesInstance) throw new Error('Fancy select not initialized');
+      fancy.value=el.multiple?values:values[0];
+    },values);
+  };
+  const values=async field=>field.evaluate(el=>Array.from(el.selectedOptions).map(o=>o.value).filter(Boolean));
+  const assertOptions=async field=>{
+    const options=await field.evaluate(el=>el.closest('joomla-field-fancy-select').choicesInstance._store.choices.map(o=>String(o.value)));
+    console.log('Atlas options:',options.slice(0,15),'total',options.length);
+    for(const ref of ['opera:ci-opera','composer:ci-composer','theatre:ci-theatre']) assert.ok(options.includes(ref),'Missing option '+ref);
+  };
+  await assertOptions(multiple);
+  await assertOptions(primary);
+  await page.getByRole('tab',{name:'Content',exact:true}).click();
+  await page.locator('#jform_catid').evaluate(select=>{
+    const option=Array.from(select.options).find(o=>Number(o.value)>0&&!o.disabled);
+    if(!option) throw new Error('No available content category');
+    select.value=option.value;
+    select.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  await page.waitForLoadState('networkidle');
+  await page.getByRole('tab',{name:'Fields',exact:true}).click();
+  await choose(multiple,['opera:ci-opera','composer:ci-composer']);
+  await choose(primary,['composer:ci-composer']);
+  assert.deepEqual((await values(multiple)).sort(),['composer:ci-composer','opera:ci-opera']);
+  assert.deepEqual(await values(primary),['composer:ci-composer']);
+  await page.getByRole('tab',{name:'Content',exact:true}).click();
+  await page.evaluate(()=>window.tinymce.get('jform_articletext').setContent('<p>Atlas integration test</p>'));
+  await page.getByRole('button',{name:'Save',exact:true}).click();
+  await page.waitForURL(url=>url.searchParams.get('layout')==='edit'&&Number(url.searchParams.get('id'))>0,{timeout:30000});
+  const url=page.url();
+  await page.reload();
+  await multiple.waitFor({state:'attached'});
+  assert.deepEqual((await values(multiple)).sort(),['composer:ci-composer','opera:ci-opera']);
+  assert.deepEqual(await values(primary),['composer:ci-composer']);
+  // Simulate a catalogue refresh that removes a previously selected entity.
+  const cache=process.env.ATLAS_CACHE;
+  writeFileSync(cache,JSON.stringify({schema_version:1,source_revision:'b'.repeat(40),entities:[{type:'opera',id:'ci-opera',title:'CI opera',url:'https://opera.plus/atlas/opere/ci-opera/'}]}));
+  await page.goto(url);
+  await multiple.waitFor({state:'attached'});
+  assert.deepEqual((await values(multiple)).sort(),['composer:ci-composer','opera:ci-opera']);
+  assert.deepEqual(await values(primary),['composer:ci-composer']);
+  await page.getByRole('button',{name:'Save',exact:true}).click();
+  await page.getByText('Article saved.',{exact:true}).waitFor({timeout:30000});
+  await page.reload();
+  await multiple.waitFor({state:'attached'});
+  assert.deepEqual((await values(multiple)).sort(),['composer:ci-composer','opera:ci-opera']);
+  assert.deepEqual(await values(primary),['composer:ci-composer']);
+  console.log('Atlas field multiple/single selection, save, reload and unavailable reference preservation passed.');
+} catch(e) {
+  await page.screenshot({path:'dist/editor-runtime/atlas-field-failure.png',fullPage:true}).catch(()=>{});
+  console.error('Page URL:',page.url(),'Browser errors:',errors);
+  console.error((await page.locator('body').innerText()).slice(0,2500));
+  console.error('Field details:',await page.locator('select[name*="atlas-"]').evaluateAll(nodes=>nodes.map(el=>({name:el.name,options:Array.from(el.options).map(o=>o.value).slice(0,15),choices:el.closest('joomla-field-fancy-select')?.choicesInstance?._store.choices.slice(0,10).map(o=>o.value)}))));
+  throw e;
+} finally {await browser.close();}
