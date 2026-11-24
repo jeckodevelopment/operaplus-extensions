@@ -49,3 +49,17 @@ jobs:
           JOOMLA_ROOT: ${{ runner.temp }}/joomla
           MYSQL_PWD: ci-test-password
         run: bash tests/joomla-lifecycle.sh
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Joomla editor runtime
+        env:
+          JOOMLA_ROOT: ${{ runner.temp }}/joomla
+          MYSQL_PWD: ci-test-password
+        run: bash tests/editor-runtime.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: joomla-editor-runtime
+          path: dist/editor-runtime/
