@@ -8,3 +8,5 @@ CI produces preview ZIPs for all five extensions and a cumulative package. Nativ
 
 ## Image credits
 Public Domain and CC0 images do not display an attribution row in the module. For CC BY and CC BY-SA, a compact native disclosure labeled Image credits preserves the author/credit, original source and license links, even when an entity has no Atlas page. The same rule applies to fallback images. The index metadata and attribution on Atlas are unchanged.
+
+The release-candidate CI exercises the actual guest frontend after upgrading the 0.3.3 installation, including associated primary, all entities, unassociated primary, field/article access, unpublished and scheduled articles, unrelated pages, manual mode and empty states. Template chrome and sidebar collapse remain template requirements.

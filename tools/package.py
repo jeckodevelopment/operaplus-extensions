@@ -47,7 +47,7 @@ with ZipFile(DIST / filename, "w", ZIP_DEFLATED) as archive:
 updates = ET.Element("updates")
 update = ET.SubElement(updates, "update")
 for key, value in {"name":"Opera+ Extensions", "description":"Opera+ editorial extensions for Joomla 6",
-                   "element":"pkg_operaplus", "type":"package", "version":version,
+                   "element":"pkg_operaplus", "type":"package", "client":"site", "version":version,
                    "sha256":hashlib.sha256((DIST / filename).read_bytes()).hexdigest()}.items():
     ET.SubElement(update, key).text = value
 download = ET.SubElement(ET.SubElement(update,"downloads"),"downloadurl",{"type":"full","format":"zip"})
