@@ -1,5 +1,6 @@
 """Build five individual packages and the cumulative Joomla package."""
 from pathlib import Path
+from datetime import date
 import hashlib
 import re
 import xml.etree.ElementTree as ET
@@ -10,6 +11,8 @@ DIST = ROOT / "dist"
 DIST.mkdir(exist_ok=True)
 version = (ROOT / "VERSION").read_text().strip()
 assert re.fullmatch(r"\d+\.\d+\.\d+", version)
+release_date = (ROOT / 'RELEASE_DATE').read_text().strip()
+assert date.fromisoformat(release_date).isoformat() == release_date
 packages = {"lib_operaplus": "operaplus.xml",
             "mod_operaplus_atlas": "mod_operaplus_atlas.xml",
             "plg_fields_operaplusatlas": "operaplusatlas.xml",
@@ -25,6 +28,7 @@ for name, manifest in packages.items():
         for item in media:
             assert (folder / media.attrib["folder"] / item.text.strip()).exists(), (name, item.text)
     assert tree.findtext("version") == version, name
+    assert tree.findtext("creationDate") == release_date, name
     with ZipFile(DIST / f"{name}-{version}.zip", "w", ZIP_DEFLATED) as archive:
         for file in sorted(folder.rglob("*")):
             if file.is_file():
@@ -35,6 +39,7 @@ manifest = ROOT / "pkg_operaplus" / "pkg_operaplus.xml"
 package = ET.parse(manifest).getroot()
 assert package.attrib["type"] == "package"
 assert package.findtext("version") == version
+assert package.findtext("creationDate") == release_date
 expected = {f"{name}-{version}.zip" for name in packages}
 assert {f.text.strip() for f in package.findall("./files/file")} == expected
 filename = f"pkg_operaplus-{version}.zip"
