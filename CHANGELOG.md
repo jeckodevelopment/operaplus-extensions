@@ -1,10 +1,10 @@
 # Changelog
 
-## 1.0.0 — release candidate (publication gated)
+## 1.0.0 — 2026-11-25
 - Validate the actual 0.3.3 to 1.0.0 native package upgrade and persisted configuration/associations.
 - Declare the site client in the package update feed and test native Joomla discovery using the generated feed.
 - Test contextual and manual Atlas rendering in the real Joomla guest frontend, access and publication restrictions, primary associations and empty states.
-- Require web installer checks in the tagged-release pipeline. Approved module design unchanged.
+- Require all three CI suites for stable publication; check public update feed and downloadable package checksum after publishing. Approved module design unchanged.
 
 ## 0.3.3 — development preview
 - Remove visible credit rows for public-domain and CC0 Atlas images; retain complete accessible attribution behind a compact disclosure for CC BY and CC BY-SA.
