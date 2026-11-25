@@ -15,3 +15,6 @@ The standalone Atlas and CTA styles implement the approved warm cream and pink p
 
 ## Native editor acceptance
 The Joomla lifecycle workflow also installs the cumulative package on a disposable Joomla 6 instance, enables the editorial plugin, logs into the administrator in Chromium, exercises all six templates through the native TinyMCE menu, checks cancellation and existing content preservation, and saves/reloads an interview to verify persistence. Screenshots are uploaded for review. This test does not use the production website.
+
+## 0.3.2 integration corrections
+The module styles protect CTA labels from the host sidebar link rules and cap headings independently of host root font size. The shared client accepts HTTPS thumb.wikimedia.org portraits with the existing attribution and license validation. The outer wrapper is owned by the template; its targeted correction is separate. Live visual acceptance remains required.

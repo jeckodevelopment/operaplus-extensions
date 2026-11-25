@@ -17,7 +17,9 @@ namespace {
     ?><!doctype html><html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Editorial boxes — visual test</title><style>
     *{box-sizing:border-box}body{margin:0;padding:16px;background:#fff;font:16px system-ui;color:#222}body.dark{background:#171316;color:#f3ece1}.fixtures{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:24px;max-width:1080px;margin:auto}.fixture{min-width:0}.wide{grid-column:1/-1}.narrow{width:240px;max-width:100%}
     <?php readfile(__DIR__ . '/../mod_operaplus_cta/media/css/cta.css'); readfile(__DIR__ . '/../mod_operaplus_atlas/media/css/atlas.css'); ?>
-    </style></head><body><main class="fixtures">
+    /* Regression: host sidebar typography and link-color overrides reported in live testing. */
+    body.operaplus.theme-light .op-sidebar a:not(.op-button):not(.btn){color:#632b3a!important}body.operaplus.theme-light .op-sidebar :is(h2,h3,p,span){color:#30232a}body.operaplus .op-sidebar h2{font-size:60px}body.operaplus .op-sidebar a{font-size:24px}
+    </style></head><body class="operaplus theme-light"><main class="fixtures op-sidebar">
     <?php foreach (['light','dark','horizontal','atlas'] as $variant) : ?>
       <div class="fixture <?php echo $variant === 'horizontal' ? 'wide' : ''; ?>" data-case="cta-<?php echo $variant; ?>">
         <?php $config = Config::from(array_merge($base,['variant'=>$variant]));
