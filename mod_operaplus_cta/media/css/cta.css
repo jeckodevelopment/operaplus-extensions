@@ -27,4 +27,4 @@ body .op-cta-shell .op-cta__button:is(:link,:visited,:hover,:focus,:active){back
 .op-cta-shell .op-cta--dark .op-cta__button:is(:link,:visited,:hover,:focus,:active){background:#fff8f2!important;color:#632b3a!important;-webkit-text-fill-color:#632b3a!important}
 .op-cta-shell .op-cta__button:hover{text-decoration:underline!important}
 @container(max-width:320px){.op-cta--atlas.op-cta--has-image{grid-template-columns:minmax(0,1fr)}}
-body.operaplus.theme-light .op-sidebar .op-cta-shell a.op-cta__button{color:#fff!important;-webkit-text-fill-color:#fff!important}body.operaplus.theme-light .op-sidebar .op-cta--dark a.op-cta__button{color:#632b3a!important;-webkit-text-fill-color:#632b3a!important}
+body.operaplus.theme-light .op-sidebar .op-cta-shell .op-cta a.op-cta__button{color:#fff!important;-webkit-text-fill-color:#fff!important}body.operaplus.theme-light .op-sidebar .op-cta-shell .op-cta--dark a.op-cta__button{color:#632b3a!important;-webkit-text-fill-color:#632b3a!important}

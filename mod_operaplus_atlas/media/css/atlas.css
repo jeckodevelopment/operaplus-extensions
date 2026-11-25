@@ -24,4 +24,4 @@ body .op-atlas-module .op-atlas-link:is(:link,:visited,:hover,:focus,:active){ba
 .op-atlas-module .op-atlas-link:hover{text-decoration:underline!important}
 .op-atlas-module .op-atlas-credit{font-size:11px!important;color:var(--atlas-ink)!important}
 .op-atlas-module .op-atlas-credit a{color:var(--atlas-ink)!important}
-body.operaplus.theme-light .op-sidebar .op-atlas-module a.op-atlas-link{color:#fff!important;-webkit-text-fill-color:#fff!important}
+body.operaplus.theme-light .op-sidebar .op-atlas-module .op-atlas-entity a.op-atlas-link{color:#fff!important;-webkit-text-fill-color:#fff!important}
