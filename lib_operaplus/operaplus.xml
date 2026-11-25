@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="library" method="upgrade">
   <name>lib_operaplus</name><libraryname>operaplus</libraryname>
-  <version>0.3.2</version><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
+  <version>0.3.3</version><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
   <description>Shared Opera+ Atlas index client</description>
   <files><folder>src</folder></files>
 </extension>

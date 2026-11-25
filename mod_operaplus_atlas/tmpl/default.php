@@ -19,7 +19,13 @@ $e = static fn ($value) => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SU
             <figure class="op-atlas-image"><img loading="lazy" decoding="async" src="<?php echo $e($image['url']); ?>" alt="<?php echo $e($image['alt']); ?>"></figure>
         <?php endif; ?>
         <?php if ($entity['url']) : ?><a class="op-atlas-link" href="<?php echo $e($entity['url']); ?>"><?php echo Text::_('MOD_OPERAPLUS_ATLAS_DISCOVER'); ?></a><?php endif; ?>
-        <?php if ($image) : ?><p class="op-atlas-credit"><a href="<?php echo $e($image['source_url']); ?>"><?php echo $e($image['credit']); ?></a> · <a href="<?php echo $e($image['license_url']); ?>"><?php echo $e($image['license']); ?></a></p><?php endif; ?>
+        <?php if ($image && !in_array($image['license'], ['Public Domain', 'CC0-1.0'], true)) : ?>
+            <details class="op-atlas-credit">
+                <summary><?php echo Text::_('MOD_OPERAPLUS_ATLAS_IMAGE_CREDITS'); ?></summary>
+                <p class="op-atlas-credit-content"><?php echo $e($image['credit']); ?> · <a href="<?php echo $e($image['source_url']); ?>"><?php echo Text::_('MOD_OPERAPLUS_ATLAS_IMAGE_SOURCE'); ?></a> · <a href="<?php echo $e($image['license_url']); ?>"><?php echo $e($image['license']); ?></a></p>
+                <?php if (!str_contains($image['credit'], $image['author'])) : ?><p class="op-atlas-credit-content"><?php echo $e($image['author']); ?></p><?php endif; ?>
+            </details>
+        <?php endif; ?>
     </section>
 <?php endforeach; ?>
 </div>
