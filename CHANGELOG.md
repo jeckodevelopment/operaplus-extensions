@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2 — development preview
+- Preserve visible CTA and Atlas link labels in the Opera+ sidebar; compact responsive typography and accessible button sizing.
+- Accept the verified Wikimedia thumbnail host used by the Atlas integration index without relaxing other image/license checks.
+- Add regression fixtures for host CSS overrides and thumbnail origin validation.
+
 ## 0.3.1 — development preview
 - Fix optional empty Atlas associations in article forms while retaining native options validation.
 - Add native browser acceptance for package upload, editorial templates and Atlas field persistence.

@@ -11,7 +11,7 @@ try {
   for (const width of [1200, 768, 375]) {
     await page.setViewportSize({width,height:900});
     for (const dark of [false,true]) {
-      await page.evaluate(dark => document.body.classList.toggle('dark',dark),dark);
+      await page.evaluate(dark => {document.body.classList.toggle('dark',dark);document.body.classList.toggle('theme-light',!dark);},dark);
       const bounds = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth > innerWidth,
         cards: [...document.querySelectorAll('.op-cta,.op-atlas-entity')].map(card => ({
@@ -30,6 +30,10 @@ try {
       assert.equal(await page.locator('[data-case="atlas-no-link"] .op-atlas-link').count(),0);
       assert.equal(await page.locator('[data-case="atlas-empty"] .op-atlas-entity').count(),0);
       assert.equal(await page.locator('[data-case="cta-light"] .op-cta__watermark').count(),1);
+      const buttons=await page.locator('.op-cta__button,.op-atlas-link').evaluateAll(nodes=>nodes.map(a=>({text:a.textContent.trim(),color:getComputedStyle(a).color,background:getComputedStyle(a).backgroundColor,fill:getComputedStyle(a).webkitTextFillColor,height:a.getBoundingClientRect().height,font:parseFloat(getComputedStyle(a).fontSize),dark:!!a.closest('.op-cta--dark')})));
+      for(const b of buttons){assert.ok(b.text && b.height>=44 && b.font===14, 'Button label/size regression');assert.equal(b.color,b.dark?'rgb(99, 43, 58)':'rgb(255, 255, 255)');assert.notEqual(b.color,b.background);assert.equal(b.fill,b.color);}
+      const heading=await page.locator('[data-case="cta-light"] .op-cta__heading').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+      assert.ok(heading>=21&&heading<=30,'Oversized sidebar heading');
       const layout = await page.locator('[data-case="atlas-portrait"] .op-atlas-entity').evaluate(el => {
         const copy=el.querySelector('.op-atlas-copy').getBoundingClientRect();
         const image=el.querySelector('.op-atlas-image').getBoundingClientRect();

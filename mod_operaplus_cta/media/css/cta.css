@@ -18,3 +18,13 @@
 .op-cta__button:focus-visible{outline:2px solid var(--op-cta-accent);outline-offset:3px}
 @container(min-width:640px){.op-cta--horizontal{grid-template-columns:minmax(0,1fr) auto;align-items:center}.op-cta--horizontal .op-cta__button{grid-column:auto}.op-cta--horizontal .op-cta__image{display:none}}
 @container(max-width:260px){.op-cta--atlas.op-cta--has-image{grid-template-columns:minmax(0,1fr)}.op-cta--atlas .op-cta__image{max-height:9rem}}
+/* Explicit local typography and link contrast, including host template sidebar rules. */
+.op-cta-shell .op-cta{box-sizing:border-box;padding:clamp(16px,6cqi,24px);gap:14px;font-size:16px;line-height:1.5}
+.op-cta-shell .op-cta__heading{font-family:Georgia,serif!important;font-size:clamp(21px,7.4cqi,30px)!important;line-height:1.16!important;letter-spacing:-.025em;margin:12px 0!important;font-weight:500;color:var(--op-cta-accent)!important;text-wrap:pretty;overflow-wrap:break-word;hyphens:auto}
+.op-cta-shell .op-cta__text{font-size:15px!important;line-height:1.5!important;color:var(--op-cta-ink)!important}
+.op-cta-shell .op-cta__icon{width:30px;color:var(--op-cta-accent)!important}
+body .op-cta-shell .op-cta__button:is(:link,:visited,:hover,:focus,:active){background:#632b3a!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font:700 14px/1.4 system-ui,sans-serif!important;letter-spacing:normal!important;text-transform:none!important;padding:12px 14px!important;min-height:44px;display:flex;align-items:center;justify-content:center;border:0!important;border-radius:0!important;box-shadow:none!important;text-align:center;white-space:normal;overflow-wrap:break-word}
+.op-cta-shell .op-cta--dark .op-cta__button:is(:link,:visited,:hover,:focus,:active){background:#fff8f2!important;color:#632b3a!important;-webkit-text-fill-color:#632b3a!important}
+.op-cta-shell .op-cta__button:hover{text-decoration:underline!important}
+@container(max-width:320px){.op-cta--atlas.op-cta--has-image{grid-template-columns:minmax(0,1fr)}}
+body.operaplus.theme-light .op-sidebar .op-cta-shell a.op-cta__button{color:#fff!important;-webkit-text-fill-color:#fff!important}body.operaplus.theme-light .op-sidebar .op-cta--dark a.op-cta__button{color:#632b3a!important;-webkit-text-fill-color:#632b3a!important}

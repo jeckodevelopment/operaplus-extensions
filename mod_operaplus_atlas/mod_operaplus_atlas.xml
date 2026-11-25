@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="module" client="site" method="upgrade">
-  <name>MOD_OPERAPLUS_ATLAS</name><version>0.3.1</version><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
+  <name>MOD_OPERAPLUS_ATLAS</name><version>0.3.2</version><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
   <description>MOD_OPERAPLUS_ATLAS_XML_DESCRIPTION</description>
   <files><filename module="mod_operaplus_atlas">mod_operaplus_atlas.php</filename><folder>tmpl</folder><folder>language</folder></files>
   <media destination="mod_operaplus_atlas" folder="media"><folder>css</folder></media>

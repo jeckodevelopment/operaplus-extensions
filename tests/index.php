@@ -55,4 +55,11 @@ $refs = ['opera:oa-w-1','opera:oa-w-2'];
 check(Index::resolve($two, $refs, false, 'opera:oa-w-2')[0]['id'] === 'oa-w-2', 'Primary not selected');
 check(Index::resolve($two, ['opera:oa-w-1'], false, 'opera:oa-w-2')[0]['id'] === 'oa-w-1', 'Unassociated primary used');
 check(Index::references('["opera:oa-w-1","bad","opera:oa-w-1"]') === ['opera:oa-w-1'], 'Invalid refs retained');
+$portrait = ['url'=>'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/Giuseppi_Verdi_by_Ferdinand_Mulnier_c1870.jpg/960px-Giuseppi_Verdi_by_Ferdinand_Mulnier_c1870.jpg','alt'=>'Ritratto di Giuseppe Verdi','source_url'=>'https://commons.wikimedia.org/wiki/File:Giuseppi_Verdi_by_Ferdinand_Mulnier_c1870.jpg','author'=>'Ferdinand Mulnier','license'=>'Public Domain','license_url'=>'https://creativecommons.org/publicdomain/mark/1.0/','credit'=>'Ferdinand Mulnier — Wikimedia Commons — Public Domain'];
+foreach ([$portrait['url'], 'https://thumb.wikimedia.org.evil.example/image.jpg', 'http://thumb.wikimedia.org/image.jpg', 'https://thumb.wikimedia.org@evil.example/image.jpg'] as $url) {
+    $candidate = $entity;
+    $candidate['image'] = array_replace($portrait, ['url'=>$url]);
+    $decoded = Index::decode(json_encode(['schema_version'=>1,'source_revision'=>str_repeat('a',40),'entities'=>[$candidate]], JSON_THROW_ON_ERROR));
+    check(($decoded['opera:oa-w-1']['image'] !== null) === ($url === $portrait['url']), 'Thumbnail origin policy failed');
+}
 echo "Atlas index tests passed\n";

@@ -37,7 +37,7 @@ final class Index
             }
         }
         if (!in_array($image['license'], ['Public Domain','CC0-1.0','CC-BY-4.0','CC-BY-SA-4.0','CC-BY-3.0','CC-BY-SA-3.0'], true)
-            || !self::https($image['url'], ['upload.wikimedia.org','commons.wikimedia.org','opera.plus'])
+            || !self::https($image['url'], ['upload.wikimedia.org','thumb.wikimedia.org','commons.wikimedia.org','opera.plus'])
             || !self::https($image['source_url'], ['commons.wikimedia.org','opera.plus'])
             || !self::https($image['license_url'], ['creativecommons.org','rightsstatements.org','commons.wikimedia.org'])) {
             return null;
