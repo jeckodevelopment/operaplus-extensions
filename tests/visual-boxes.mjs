@@ -30,6 +30,27 @@ try {
       assert.equal(await page.locator('[data-case="atlas-no-link"] .op-atlas-link').count(),0);
       assert.equal(await page.locator('[data-case="atlas-empty"] .op-atlas-entity').count(),0);
       assert.equal(await page.locator('[data-case="cta-light"] .op-cta__watermark').count(),1);
+      for (const kind of ['public-domain','cc0']) {
+        const card=page.locator('[data-case="atlas-'+kind+'"]');
+        assert.equal(await card.locator('img').count(),1);
+        assert.equal(await card.locator('.op-atlas-credit').count(),0);
+        assert.equal(await card.locator('.op-atlas-entity').evaluate(el=>el.lastElementChild.className),'op-atlas-link');
+      }
+      for(const kind of ['portrait','no-link','share-alike','fallback']){
+        const card=page.locator('[data-case="atlas-'+kind+'"]');
+        const details=card.locator('details.op-atlas-credit');
+        assert.equal(await details.count(),1);
+        assert.equal(await details.evaluate(el=>el.open),false);
+        assert.equal(await details.locator('.op-atlas-credit-content').first().isVisible(),false);
+        await details.locator('summary').focus();
+        await page.keyboard.press('Enter');
+        assert.equal(await details.evaluate(el=>el.open),true);
+        assert.equal(await details.locator('a[href*="creativecommons.org"]').count(),1);
+        assert.equal(await details.locator('a[href*="commons.wikimedia.org"]').count(),1);
+        assert.ok((await details.innerText()).includes('Autore fixture'));
+        await page.keyboard.press('Enter');
+        assert.equal(await details.evaluate(el=>el.open),false);
+      }
       const buttons=await page.locator('.op-cta__button,.op-atlas-link').evaluateAll(nodes=>nodes.map(a=>({text:a.textContent.trim(),color:getComputedStyle(a).color,background:getComputedStyle(a).backgroundColor,fill:getComputedStyle(a).webkitTextFillColor,height:a.getBoundingClientRect().height,font:parseFloat(getComputedStyle(a).fontSize),dark:!!a.closest('.op-cta--dark')})));
       for(const b of buttons){assert.ok(b.text && b.height>=44 && b.font===14, 'Button label/size regression');assert.equal(b.color,b.dark?'rgb(99, 43, 58)':'rgb(255, 255, 255)');assert.notEqual(b.color,b.background);assert.equal(b.fill,b.color);}
       const heading=await page.locator('[data-case="cta-light"] .op-cta__heading').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));

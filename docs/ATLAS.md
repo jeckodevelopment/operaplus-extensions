@@ -5,3 +5,6 @@ Install lib_operaplus first, then the field plugin and the module. Enable the fi
 Fixed HTTPS endpoint, 5-second HTTP timeout, maximum 4 MiB, redirects disabled, validated last-known-good cache under Joomla cache directory. Concurrent refresh requests use a nonblocking lock; failed refreshes have a five-minute retry cooldown. If PHP URL streams are unavailable, cached content is retained. Images with invalid attribution or links are omitted. No installation on a live Joomla instance has yet been verified.
 
 CI produces preview ZIPs for all five extensions and a cumulative package. Native installation, reinstallation, removal, web upload and TinyMCE tests are automated. The Atlas field runtime test uses a deterministic local index and checks multiple/single selection, actual Joomla article save/reload and retention of references removed from the index. Stable release and live update discovery remain pending.
+
+## Image credits
+Public Domain and CC0 images do not display an attribution row in the module. For CC BY and CC BY-SA, a compact native disclosure labeled Image credits preserves the author/credit, original source and license links, even when an entity has no Atlas page. The same rule applies to fallback images. The index metadata and attribution on Atlas are unchanged.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.3 — development preview
+- Remove visible credit rows for public-domain and CC0 Atlas images; retain complete accessible attribution behind a compact disclosure for CC BY and CC BY-SA.
+- Add browser regression checks for each license family, fallback images and entities without a destination page.
+
 ## 0.3.2 — development preview
 - Preserve visible CTA and Atlas link labels in the Opera+ sidebar; compact responsive typography and accessible button sizing.
 - Accept the verified Wikimedia thumbnail host used by the Atlas integration index without relaxing other image/license checks.
