@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.1 — 2026-11-25
+- Declare the release date in the cumulative and all five individual Joomla manifests; validate it against the versioned RELEASE_DATE in package builds (BUG-003).
+
 ## 1.0.0 — 2026-11-25
 - Validate the actual 0.3.3 to 1.0.0 native package upgrade and persisted configuration/associations.
 - Declare the site client in the package update feed and test native Joomla discovery using the generated feed.
