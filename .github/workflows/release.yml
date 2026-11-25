@@ -9,8 +9,10 @@ jobs:
     uses: ./.github/workflows/ci.yml
   lifecycle:
     uses: ./.github/workflows/joomla-lifecycle.yml
+  web-upload:
+    uses: ./.github/workflows/web-package-upload.yml
   publish:
-    needs: [quality, lifecycle]
+    needs: [quality, lifecycle, web-upload]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

@@ -28,6 +28,8 @@ jobs:
           --health-retries=10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -59,7 +61,12 @@ jobs:
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Joomla editor runtime
+      - name: Build pinned 0.3.3 upgrade baseline
+        run: |
+          mkdir -p "$RUNNER_TEMP/baseline"
+          git archive ca2460a52e0d510a885b0c969ebf192705943769 | tar -x -C "$RUNNER_TEMP/baseline"
+          python3 "$RUNNER_TEMP/baseline/tools/package.py"
+      - name: Joomla editor, upgrade and frontend runtime
         env:
           JOOMLA_ROOT: ${{ runner.temp }}/joomla
           MYSQL_PWD: ci-test-password

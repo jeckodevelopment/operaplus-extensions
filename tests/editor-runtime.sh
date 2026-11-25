@@ -3,7 +3,7 @@ set -euo pipefail
 : "${JOOMLA_ROOT:?}"
 root="$(pwd)"
 version="$(cat VERSION)"
-(cd "$JOOMLA_ROOT" && php cli/joomla.php extension:install --no-interaction --path="$root/dist/pkg_operaplus-$version.zip")
+(cd "$JOOMLA_ROOT" && php cli/joomla.php extension:install --no-interaction --path="$RUNNER_TEMP/baseline/dist/pkg_operaplus-0.3.3.zip")
 mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=1 WHERE type='plugin' AND folder IN ('fields','editors-xtd') AND element IN ('operaplus_templates','operaplusatlas');"
 # Joomla's Uri::base() treats cli-server as CLI; set an explicit site base
 # only in the disposable CI installation to avoid /administrator/media URLs.
@@ -46,3 +46,9 @@ node tests/editor-runtime.mjs
 cp "$ATLAS_FIXTURE" "$ATLAS_CACHE"
 node tests/atlas-field-runtime.mjs
 
+
+# Exercise update discovery and an upgrade from the actual tested preview.
+bash tests/upgrade-runtime.sh
+# Restore the full known catalogue for guest frontend checks after upgrade.
+cp "$ATLAS_FIXTURE" "$ATLAS_CACHE"
+node tests/atlas-context-runtime.mjs
