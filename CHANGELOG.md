@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.2 — 2026-11-26
+- Add opt-in administrative System – Opera+ Editorial Heading plugin: per-menu background, subtitle and height; native page heading remains the switch and title. No frontend execution beyond the client guard. Six package children; existing settings preserved.
+
 ## 1.0.1 — 2026-11-25
 - Declare the release date in the cumulative and all five individual Joomla manifests; validate it against the versioned RELEASE_DATE in package builds (BUG-003).
 

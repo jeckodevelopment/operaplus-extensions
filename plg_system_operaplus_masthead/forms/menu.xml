@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+  <fields name="params">
+    <fieldset name="operaplus_masthead" label="PLG_SYSTEM_OPERAPLUS_MASTHEAD_TAB">
+      <field name="op_masthead_note" type="note" description="PLG_SYSTEM_OPERAPLUS_MASTHEAD_NOTE"/>
+      <field name="op_masthead_image" type="media" directory="images" label="PLG_SYSTEM_OPERAPLUS_MASTHEAD_IMAGE" description="PLG_SYSTEM_OPERAPLUS_MASTHEAD_IMAGE_DESC"/>
+      <field name="op_masthead_subtitle" type="text" filter="string" maxlength="240" label="PLG_SYSTEM_OPERAPLUS_MASTHEAD_SUBTITLE"/>
+      <field name="op_masthead_height" type="list" default="compact" validate="options" label="PLG_SYSTEM_OPERAPLUS_MASTHEAD_HEIGHT">
+        <option value="compact">PLG_SYSTEM_OPERAPLUS_MASTHEAD_COMPACT</option>
+        <option value="normal">PLG_SYSTEM_OPERAPLUS_MASTHEAD_NORMAL</option>
+      </field>
+    </fieldset>
+  </fields>
+</form>

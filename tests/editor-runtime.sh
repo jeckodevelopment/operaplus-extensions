@@ -52,3 +52,8 @@ bash tests/upgrade-runtime.sh
 # Restore the full known catalogue for guest frontend checks after upgrade.
 cp "$ATLAS_FIXTURE" "$ATLAS_CACHE"
 node tests/atlas-context-runtime.mjs
+
+# Exercise the optional menu configuration on the installed, upgraded package.
+mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=1 WHERE type='plugin' AND folder='system' AND element='operaplus_masthead';"
+export CI_MENU_ID="$(mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "SELECT id FROM ci_menu WHERE client_id=0 AND home=1 LIMIT 1")"
+node tests/masthead-runtime.mjs
