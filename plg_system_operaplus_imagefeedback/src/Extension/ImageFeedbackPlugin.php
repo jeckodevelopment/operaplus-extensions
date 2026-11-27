@@ -20,7 +20,7 @@ final class ImageFeedbackPlugin extends CMSPlugin implements SubscriberInterface
     public function onBeforeCompileHead(BeforeCompileHeadEvent $event): void
     {
         $app = $this->getApplication();
-        if ($app->getInput()->getCmd('option') !== 'com_media'
+        if (!$app->isClient('administrator') || $app->getInput()->getCmd('option') !== 'com_media'
             || $app->getInput()->getCmd('view', 'media') !== 'media'
             || !$app->getIdentity()->authorise('core.create', 'com_media')
             || !PluginHelper::isEnabled('media-action', 'operaplus_imageoptimizer')) { return; }

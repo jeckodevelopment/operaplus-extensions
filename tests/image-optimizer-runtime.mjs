@@ -5,6 +5,8 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 const browser = await chromium.launch();
 const page = await browser.newPage();
+page.on('pageerror',e=>console.error('Browser page error:',String(e)));
+page.on('requestfailed',r=>console.error('Failed request:',r.url(),r.failure()));
 const base = 'http://127.0.0.1:8080/administrator/index.php';
 const folder = join(process.env.JOOMLA_ROOT,'images','ci-optimizer');
 mkdirSync(join(folder,'excluded'),{recursive:true});
@@ -73,4 +75,8 @@ try {
    db("UPDATE ci_extensions SET params=CONVERT(UNHEX('"+Buffer.from(oldParams).toString('hex')+"') USING utf8mb4) WHERE element='com_media' AND type='component'");
  }
  console.log('Native Media Manager API: returned WebP name, real bytes, no original, collision safety and exclusion passed.');
+} catch (e) {
+  console.error('Media page URL:',page.url(),await page.locator('script[src]').evaluateAll(els=>els.map(el=>el.src).filter(x=>x.includes('feedback'))));
+  await page.screenshot({path:'dist/editor-runtime/image-optimizer-failure.png',fullPage:true}).catch(()=>{});
+  throw e;
 } finally {await browser.close();}
