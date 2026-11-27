@@ -1,0 +1,44 @@
+name: Verify published stable 1.1.1
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/verify-stable-1.1.1.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download public immutable release and verify live update feed
+        run: |
+          set -euo pipefail
+          base=https://github.com/jeckodevelopment/operaplus-extensions/releases
+          curl --fail --location --retry 5 --retry-all-errors --max-time 120 -o "$RUNNER_TEMP/versioned.xml" "$base/download/v1.1.1/updates.xml"
+          curl --fail --location --retry 5 --retry-all-errors --max-time 120 -o "$RUNNER_TEMP/package.zip" "$base/download/v1.1.1/pkg_operaplus-1.1.1.zip"
+          for attempt in {1..12}; do
+            if curl --fail --location --max-time 30 -o "$RUNNER_TEMP/latest.xml" "$base/latest/download/updates.xml" && cmp -s "$RUNNER_TEMP/versioned.xml" "$RUNNER_TEMP/latest.xml"; then
+              break
+            fi
+            sleep 10
+          done
+          cmp "$RUNNER_TEMP/versioned.xml" "$RUNNER_TEMP/latest.xml"
+          python3 - <<'PY'
+          import hashlib, os, pathlib, xml.etree.ElementTree as ET, zipfile
+          p = pathlib.Path(os.environ['RUNNER_TEMP'])
+          u = ET.parse(p / 'latest.xml').getroot().find('update')
+          assert u.findtext('version') == '1.1.1'
+          assert u.findtext('element') == 'pkg_operaplus'
+          assert u.findtext('type') == 'package'
+          assert u.findtext('client') == 'site'
+          assert u.findtext('tags/tag') == 'stable'
+          assert u.findtext('downloads/downloadurl') == 'https://github.com/jeckodevelopment/operaplus-extensions/releases/download/v1.1.1/pkg_operaplus-1.1.1.zip'
+          digest = hashlib.sha256((p / 'package.zip').read_bytes()).hexdigest()
+          assert u.findtext('sha256') == digest
+          with zipfile.ZipFile(p / 'package.zip') as z:
+              assert z.testzip() is None
+              manifest = ET.fromstring(z.read('pkg_operaplus.xml'))
+              assert manifest.findtext('version') == '1.1.1'
+              assert len(manifest.findall('./files/file')) == 8
+          print('Public stable feed and immutable package verified:', digest)
+          PY
