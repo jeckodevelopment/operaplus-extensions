@@ -32,7 +32,7 @@ final class ImageFeedbackPlugin extends CMSPlugin implements SubscriberInterface
         ]);
         $doc->getWebAssetManager()->registerAndUseScript(
             'operaplus.imagefeedback',
-            'plg_system_operaplus_imagefeedback/js/feedback.js',
+            'media/plg_system_operaplus_imagefeedback/js/feedback.js',
             ['version' => 'auto'],
             ['defer' => true],
             ['core', 'messages']
