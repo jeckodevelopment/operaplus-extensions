@@ -5,32 +5,35 @@ defined('_JEXEC') or die;
 /** Bounded conversion. Never writes an upload or mutates caller data. */
 final class Optimizer
 {
-    public static function convert(string $data, string $extension, int $quality = 90, int $maxEdge = 1920): ?string
+    public static function convert(string $data, string $extension, int $quality = 90, int $maxEdge = 1920, ?string &$reason = null): ?string
     {
+        $reason = 'conversion-error';
         if (!function_exists('imagewebp') || !function_exists('imagecreatefromstring')
-            || strlen($data) > 20 * 1024 * 1024 || !in_array($extension, ['jpg', 'jpeg', 'png'], true)) {
-            return null;
+            || !function_exists('imagetypes') || !(imagetypes() & IMG_WEBP)) {
+            $reason = 'gd-webp'; return null;
         }
+        if (strlen($data) > 20 * 1024 * 1024) { $reason = 'input-size'; return null; }
+        if (!in_array($extension, ['jpg', 'jpeg', 'png'], true)) { $reason = 'unsupported-format'; return null; }
         $info = @getimagesizefromstring($data);
         if (!$info || $info[2] !== ($extension === 'png' ? IMAGETYPE_PNG : IMAGETYPE_JPEG)) {
-            return null;
+            $reason = 'invalid-image'; return null;
         }
         [$w, $h] = $info;
-        if ($w < 1 || $h < 1 || $w > 10000 || $h > 10000 || $w * $h > 12000000
-            || ($extension === 'png' && str_contains($data, 'acTL'))) {
-            return null;
+        if ($w < 1 || $h < 1 || $w > 10000 || $h > 10000 || $w * $h > 12000000) {
+            $reason = 'dimensions'; return null;
         }
+        if ($extension === 'png' && str_contains($data, 'acTL')) { $reason = 'animated-png'; return null; }
         $limit = trim((string) ini_get('memory_limit'));
         if ($limit !== '-1' && preg_match('/^(\d+)\s*([KMG]?)$/i', $limit, $m)) {
             $bytes = (int) $m[1] * (1024 ** (['' => 0, 'K' => 1, 'M' => 2, 'G' => 3][strtoupper($m[2])]));
             if ($bytes - memory_get_usage(true) < 12 * $w * $h + 3 * strlen($data) + 16 * 1024 * 1024) {
-                return null;
+                $reason = 'memory'; return null;
             }
         }
         try {
             $orientation = 1;
             if ($extension !== 'png') {
-                if (!function_exists('exif_read_data')) { return null; }
+                if (!function_exists('exif_read_data')) { $reason = 'exif'; return null; }
                 $stream = fopen('php://temp', 'w+b');
                 if (!$stream) { return null; }
                 try {
@@ -41,7 +44,7 @@ final class Optimizer
                 } finally { fclose($stream); }
             }
             $image = @imagecreatefromstring($data);
-            if (!$image) { return null; }
+            if (!$image) { $reason = 'invalid-image'; return null; }
             if (in_array($orientation, [2, 5, 7], true)) { imageflip($image, IMG_FLIP_HORIZONTAL); }
             if ($orientation === 4) { imageflip($image, IMG_FLIP_VERTICAL); }
             $angle = match ($orientation) { 3 => 180, 5, 8 => 90, 6, 7 => -90, default => 0 };
@@ -65,9 +68,11 @@ final class Optimizer
                 $ok = @imagewebp($target, null, max(50, min(100, $quality)));
                 $webp = ob_get_contents();
             } finally { ob_end_clean(); }
-            if (!$ok || !is_string($webp) || strlen($webp) >= strlen($data)) { return null; }
+            if (!$ok || !is_string($webp) || $webp === '') { $reason = 'encoder'; return null; }
+            if (strlen($webp) >= strlen($data)) { $reason = 'not-smaller'; return null; }
             $out = @getimagesizefromstring($webp);
-            return $out && $out[2] === IMAGETYPE_WEBP && $out[0] === $nw && $out[1] === $nh ? $webp : null;
+            if (!$out || $out[2] !== IMAGETYPE_WEBP || $out[0] !== $nw || $out[1] !== $nh) { $reason = 'encoder'; return null; }
+            $reason = 'converted'; return $webp;
         } catch (\Throwable $e) {
             return null;
         }
