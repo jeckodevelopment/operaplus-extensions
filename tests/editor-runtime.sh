@@ -57,3 +57,7 @@ node tests/atlas-context-runtime.mjs
 mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=1 WHERE type='plugin' AND folder='system' AND element='operaplus_masthead';"
 export CI_MENU_ID="$(mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "SELECT id FROM ci_menu WHERE client_id=0 AND home=1 LIMIT 1")"
 node tests/masthead-runtime.mjs
+
+# Real authenticated media upload.
+mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=1 WHERE type='plugin' AND folder='media-action' AND element='operaplus_imageoptimizer';"
+node tests/image-optimizer-runtime.mjs
