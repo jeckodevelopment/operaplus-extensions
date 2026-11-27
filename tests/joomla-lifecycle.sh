@@ -3,10 +3,10 @@
 set -euo pipefail
 : "${JOOMLA_ROOT:?Set JOOMLA_ROOT to the isolated test installation}"
 test -f "$JOOMLA_ROOT/configuration.php"
-packages=(lib_operaplus plg_fields_operaplusatlas mod_operaplus_atlas mod_operaplus_cta plg_editorsxtd_operaplus_templates plg_system_operaplus_masthead)
-elements=(operaplus operaplusatlas mod_operaplus_atlas mod_operaplus_cta operaplus_templates operaplus_masthead)
-types=(library plugin module module plugin plugin)
-groups=("" fields "" "" editors-xtd system)
+packages=(lib_operaplus plg_fields_operaplusatlas mod_operaplus_atlas mod_operaplus_cta plg_editorsxtd_operaplus_templates plg_system_operaplus_masthead plg_mediaaction_operaplus_imageoptimizer)
+elements=(operaplus operaplusatlas mod_operaplus_atlas mod_operaplus_cta operaplus_templates operaplus_masthead operaplus_imageoptimizer)
+types=(library plugin module module plugin plugin plugin)
+groups=("" fields "" "" editors-xtd system media-action)
 root="$(pwd)"
 db() { mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "$1"; }
 id_for() { db "SELECT extension_id FROM ci_extensions WHERE element='${elements[$1]}' AND type='${types[$1]}' AND folder='${groups[$1]}'"; }
@@ -29,6 +29,7 @@ test -f "$JOOMLA_ROOT/modules/mod_operaplus_cta/mod_operaplus_cta.php"
 test -f "$JOOMLA_ROOT/plugins/fields/operaplusatlas/services/provider.php"
 test -f "$JOOMLA_ROOT/plugins/editors-xtd/operaplus_templates/services/provider.php"
 test -f "$JOOMLA_ROOT/plugins/system/operaplus_masthead/services/provider.php"
+test -f "$JOOMLA_ROOT/plugins/media-action/operaplus_imageoptimizer/services/provider.php"
 test -f "$JOOMLA_ROOT/media/mod_operaplus_cta/css/cta.css"
 test -f "$JOOMLA_ROOT/media/plg_editors-xtd_operaplus_templates/js/templates.js"
 for i in "${!packages[@]}"; do
@@ -46,7 +47,7 @@ for ((i=${#packages[@]}-1;i>=0;i--)); do
   (cd "$JOOMLA_ROOT" && php cli/joomla.php extension:remove "$id" --no-interaction)
   test -z "$(id_for "$i")"
 done
-echo "All six extensions installed, reinstalled and removed using Joomla's native installer."
+echo "All seven extensions installed, reinstalled and removed using Joomla's native installer."
 
 # Test the cumulative package separately from the individual extensions.
 version="$(cat VERSION)"
@@ -62,4 +63,4 @@ done
 test -f "$JOOMLA_ROOT/media/mod_operaplus_atlas/css/atlas.css"
 (cd "$JOOMLA_ROOT" && php cli/joomla.php extension:remove "$pkg_id" --no-interaction)
 for i in "${!packages[@]}"; do test -z "$(id_for "$i")"; done
-echo "Cumulative package installed with all six children and removed cleanly."
+echo "Cumulative package installed with all seven children and removed cleanly."

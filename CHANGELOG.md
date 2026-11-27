@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.0 — 2026-11-27
+- Add opt-in Media Action – Opera+ Image Optimizer: new local JPEG/PNG uploads become smaller WebP images before Joomla saves them, quality 90, maximum long edge 1920, orientation and transparency. Existing media unchanged. Seven package children. No stable release until acceptance.
+
 ## 1.0.2 — 2026-11-26
 - Add opt-in administrative System – Opera+ Editorial Heading plugin: per-menu background, subtitle and height; native page heading remains the switch and title. No frontend execution beyond the client guard. Six package children; existing settings preserved.
 
