@@ -6,6 +6,8 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use OperaPlus\Plugin\System\ImageFeedback\Extension\ImageFeedbackPlugin;
+// The newly enabled plugin may be booted before Joomla regenerates its namespace cache.
+require_once __DIR__ . '/../src/Extension/ImageFeedbackPlugin.php';
 return new class implements ServiceProviderInterface {
     public function register(Container $container)
     {
