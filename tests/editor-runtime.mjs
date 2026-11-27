@@ -27,8 +27,8 @@ try {
   const getContent = () => page.evaluate(()=>window.tinymce.get('jform_articletext').getContent());
   const openTemplates = async () => {
     // Use the actual TinyMCE menu, not a simulated editor adapter.
-    const editorId=await page.evaluate(()=>window.tinymce.get('jform_articletext').getContainer().id);
-    await page.locator('#'+editorId).getByRole('button',{name:'CMS Content',exact:true}).click();
+    await page.evaluate(()=>window.tinymce.get('jform_articletext').getContainer().setAttribute('data-ci-article-editor','1'));
+    await page.locator('[data-ci-article-editor="1"]').getByRole('button',{name:'CMS Content',exact:true}).click();
     await page.getByRole('menuitem',{name:'Opera+ templates',exact:true}).click();
     await page.locator('dialog[open] select').waitFor();
   };
