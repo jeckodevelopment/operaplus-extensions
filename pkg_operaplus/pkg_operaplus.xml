@@ -2,20 +2,21 @@
 <extension type="package" method="upgrade">
   <name>Opera+ Extensions</name>
   <packagename>operaplus</packagename>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <creationDate>2026-11-27</creationDate>
   <author>Jecko Development</author>
   <license>GNU General Public License version 2 or later</license>
   <description>Opera+ editorial extensions for Joomla 6</description>
   <blockChildUninstall>true</blockChildUninstall>
   <files folder="packages">
-    <file type="library" id="operaplus">lib_operaplus-1.1.0.zip</file>
-    <file type="plugin" id="operaplusatlas" group="fields">plg_fields_operaplusatlas-1.1.0.zip</file>
-    <file type="module" id="mod_operaplus_atlas" client="site">mod_operaplus_atlas-1.1.0.zip</file>
-    <file type="module" id="mod_operaplus_cta" client="site">mod_operaplus_cta-1.1.0.zip</file>
-    <file type="plugin" id="operaplus_templates" group="editors-xtd">plg_editorsxtd_operaplus_templates-1.1.0.zip</file>
-    <file type="plugin" id="operaplus_masthead" group="system">plg_system_operaplus_masthead-1.1.0.zip</file>
-    <file type="plugin" id="operaplus_imageoptimizer" group="media-action">plg_mediaaction_operaplus_imageoptimizer-1.1.0.zip</file>
+    <file type="library" id="operaplus">lib_operaplus-1.1.1.zip</file>
+    <file type="plugin" id="operaplusatlas" group="fields">plg_fields_operaplusatlas-1.1.1.zip</file>
+    <file type="module" id="mod_operaplus_atlas" client="site">mod_operaplus_atlas-1.1.1.zip</file>
+    <file type="module" id="mod_operaplus_cta" client="site">mod_operaplus_cta-1.1.1.zip</file>
+    <file type="plugin" id="operaplus_templates" group="editors-xtd">plg_editorsxtd_operaplus_templates-1.1.1.zip</file>
+    <file type="plugin" id="operaplus_masthead" group="system">plg_system_operaplus_masthead-1.1.1.zip</file>
+    <file type="plugin" id="operaplus_imageoptimizer" group="media-action">plg_mediaaction_operaplus_imageoptimizer-1.1.1.zip</file>
+    <file type="plugin" id="operaplus_imagefeedback" group="system">plg_system_operaplus_imagefeedback-1.1.1.zip</file>
   </files>
   <updateservers><server type="extension" priority="1" name="Opera+ Extensions stable">https://github.com/jeckodevelopment/operaplus-extensions/releases/latest/download/updates.xml</server></updateservers>
 </extension>

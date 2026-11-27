@@ -24,4 +24,8 @@ check(Optimizer::convert($png, 'gif') === null, 'GIF untouched');
 check(Optimizer::convert($webp, 'webp') === null, 'WebP untouched');
 check(Optimizer::excluded('/logos/sub', "images/logos\nimages/branding"), 'child exclusion');
 check(!Optimizer::excluded('/logos-new', 'images/logos'), 'boundary exclusion');
+$reason = '';
+check(Optimizer::convert('broken', 'png', 90, 1920, $reason) === null && $reason === 'invalid-image', 'invalid reason');
+check(Optimizer::convert($png, 'gif', 90, 1920, $reason) === null && $reason === 'unsupported-format', 'format reason');
+check(is_string(Optimizer::convert($png, 'png', 90, 1920, $reason)) && $reason === 'converted', 'success reason');
 echo "Image optimizer: conversion, resize, alpha, size, invalid input and exclusions passed.\n";

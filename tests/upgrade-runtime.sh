@@ -27,7 +27,7 @@ test -n "$before"
 settings="$(db "SELECT params FROM ci_modules WHERE id=$module")"
 (cd "$JOOMLA_ROOT" && php cli/joomla.php extension:install --no-interaction --path="$root/dist/pkg_operaplus-$version.zip")
 test "$(db "SELECT extension_id FROM ci_extensions WHERE element='pkg_operaplus' AND type='package'")" = "$package"
-test "$(db "SELECT COUNT(*) FROM ci_extensions WHERE package_id=$package AND JSON_UNQUOTE(JSON_EXTRACT(manifest_cache,'$.version'))='$version'")" = 7
+test "$(db "SELECT COUNT(*) FROM ci_extensions WHERE package_id=$package AND JSON_UNQUOTE(JSON_EXTRACT(manifest_cache,'$.version'))='$version'")" = 8
 test "$(db "SELECT field_id,item_id,value FROM ci_fields_values WHERE item_id='$article' ORDER BY field_id,value")" = "$before"
 test "$(db "SELECT params FROM ci_modules WHERE id=$module")" = "$settings"
 test "$(db "SELECT COUNT(*) FROM ci_modules_menu WHERE moduleid=$module AND menuid=0")" = 1

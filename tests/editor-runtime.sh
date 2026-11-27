@@ -51,7 +51,21 @@ node tests/atlas-field-runtime.mjs
 bash tests/upgrade-runtime.sh
 # Restore the full known catalogue for guest frontend checks after upgrade.
 cp "$ATLAS_FIXTURE" "$ATLAS_CACHE"
-node tests/atlas-context-runtime.mjs
+# If guest rendering fails, repeat only the failing HTTP request with debug enabled
+# on this disposable local Joomla instance, and preserve the original failure.
+if ! node tests/atlas-context-runtime.mjs; then
+  php -r '$p=$argv[1]; $s=file_get_contents($p); $s=preg_replace("~public\\s+\\x24debug\\s*=\\s*[^;]*;~","public ".chr(36)."debug = true;", $s); file_put_contents($p,$s);' "$JOOMLA_ROOT/configuration.php"
+  curl -sS "http://127.0.0.1:8080/index.php?option=com_content&view=article&id=2" > dist/editor-runtime/frontend-debug.html
+  python3 - <<'PY'
+from html.parser import HTMLParser
+class P(HTMLParser):
+    def handle_data(self,s):
+        if s.strip() and any(t in s.lower() for t in ('error','exception','undefined','not found','typeerror','argument','stack trace','class ')):
+            print(s.strip()[:600])
+p=P();p.feed(open('dist/editor-runtime/frontend-debug.html').read())
+PY
+  exit 1
+fi
 
 # Exercise the optional menu configuration on the installed, upgraded package.
 mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=1 WHERE type='plugin' AND folder='system' AND element='operaplus_masthead';"

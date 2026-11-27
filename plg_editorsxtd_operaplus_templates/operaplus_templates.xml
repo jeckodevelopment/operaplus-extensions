@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension type="plugin" group="editors-xtd" method="upgrade">
-  <name>PLG_EDITORSXTD_OPERAPLUS_TEMPLATES</name><version>1.1.0</version>
+  <name>PLG_EDITORSXTD_OPERAPLUS_TEMPLATES</name><version>1.1.1</version>
   <creationDate>2026-11-27</creationDate><author>Jecko Development</author><license>GNU General Public License version 2 or later</license><description>PLG_EDITORSXTD_OPERAPLUS_TEMPLATES_XML_DESCRIPTION</description>
   <namespace path="src">OperaPlus\Plugin\EditorsXtd\Templates</namespace>
   <files><folder plugin="operaplus_templates">services</folder><folder>src</folder></files>

@@ -18,7 +18,7 @@ jobs:
           extensions: gd, exif
           coverage: none
       - name: PHP syntax
-        run: find lib_operaplus mod_operaplus_atlas plg_fields_operaplusatlas mod_operaplus_cta plg_editorsxtd_operaplus_templates plg_system_operaplus_masthead plg_mediaaction_operaplus_imageoptimizer tests -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find lib_operaplus mod_operaplus_atlas plg_fields_operaplusatlas mod_operaplus_cta plg_editorsxtd_operaplus_templates plg_system_operaplus_masthead plg_mediaaction_operaplus_imageoptimizer plg_system_operaplus_imagefeedback tests -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Unit tests
         run: |
           php tests/index.php
