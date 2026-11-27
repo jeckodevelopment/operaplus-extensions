@@ -1,12 +1,14 @@
 # Opera+ Extensions
 
-Joomla 6 extensions for the Opera+ magazine. Development milestone 1.0.2: see [roadmap](https://github.com/jeckodevelopment/operaplus-extensions/issues/1). Stable release publication is tracked on the [Releases page](https://github.com/jeckodevelopment/operaplus-extensions/releases).
+Joomla 6 extensions for the Opera+ magazine. Development milestone 1.1.0: see [roadmap](https://github.com/jeckodevelopment/operaplus-extensions/issues/1). Stable release publication is tracked on the [Releases page](https://github.com/jeckodevelopment/operaplus-extensions/releases).
 
-## 1.0.2
+## 1.1.0
 
 - Library, Atlas module and article field: [Atlas integration](docs/ATLAS.md).
 - Configurable CTA and editorial templates: [Editorial extensions](docs/EDITORIAL.md).
 
 - Menu editorial heading: enable System – Opera+ Editorial Heading in Plugins; edit a site menu item, then Editorial heading. Native Show Page Heading and Page Heading control visibility/title in Magazine RC10+. Optional image, subtitle and height are saved in menu params. No frontend plugin logic.
 
-CI builds six individual ZIP packages and one cumulative package. See [release and updates](docs/RELEASE.md). Use the cumulative package from the Releases page for normal installations. CI artifacts are for development testing.
+- Image Optimizer: optional Media Manager upload conversion for JPEG/PNG, WebP quality 90, maximum long edge 1920 px. [Configuration and limitations](docs/IMAGE_OPTIMIZER.md).
+
+CI builds seven individual ZIP packages and one cumulative package. See [release and updates](docs/RELEASE.md). Use the cumulative package from the Releases page for normal installations. CI artifacts are for development testing.
