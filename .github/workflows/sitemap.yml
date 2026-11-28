@@ -1,0 +1,31 @@
+name: Opera+ Sitemap preview
+on:
+  pull_request:
+    paths: ['plg_system_operaplus_sitemap/**', 'tests/sitemap.php', '.github/workflows/sitemap.yml', 'docs/SITEMAP.md']
+  push:
+    branches: [main]
+    paths: ['plg_system_operaplus_sitemap/**', 'tests/sitemap.php', '.github/workflows/sitemap.yml', 'docs/SITEMAP.md']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sitemap:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: xmlwriter, simplexml
+          coverage: none
+      - run: find plg_system_operaplus_sitemap -name '*.php' -print0 | xargs -0 -n1 php -l
+      - run: php tests/sitemap.php
+      - name: Build standalone preview ZIP
+        run: |
+          mkdir -p dist
+          (cd plg_system_operaplus_sitemap && zip -qr ../dist/plg_system_operaplus_sitemap-1.0.0.zip .)
+          unzip -t dist/plg_system_operaplus_sitemap-1.0.0.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: operaplus-sitemap-preview
+          path: dist/plg_system_operaplus_sitemap-1.0.0.zip
