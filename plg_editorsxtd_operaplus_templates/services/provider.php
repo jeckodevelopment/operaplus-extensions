@@ -7,6 +7,8 @@ use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use OperaPlus\Plugin\EditorsXtd\Templates\Extension\TemplatesPlugin;
 
+// The installer can boot a plugin before the generated PSR-4 map is refreshed.
+require_once __DIR__ . '/../src/Extension/TemplatesPlugin.php';
 return new class implements ServiceProviderInterface {
     public function register(Container $container)
     {
