@@ -49,6 +49,23 @@ node tests/atlas-field-runtime.mjs
 
 # Exercise update discovery and an upgrade from the actual tested preview.
 bash tests/upgrade-runtime.sh
+# Reproduce a stale extension namespace map in this disposable installation.
+# Provider bootstrap must not depend on a newly installed namespace already
+# being visible to the separate HTTP PHP process.
+php -r '
+    define("_JEXEC", 1);
+    define("JPATH_BASE", $argv[1] . "/administrator");
+    require JPATH_BASE . "/includes/defines.php";
+    $file = JPATH_CACHE . "/autoload_psr4.php";
+    if (!is_file($file)) { throw new RuntimeException("Missing Joomla namespace map"); }
+    $original = file_get_contents($file);
+    $stale = preg_replace("/^.*OperaPlus.*Plugin.*\n/m", "", $original, -1, $removed);
+    if ($stale === null) { throw new RuntimeException("Cannot create stale namespace fixture"); }
+    if (file_put_contents($file, $stale, LOCK_EX) !== strlen($stale)) {
+        throw new RuntimeException("Cannot write stale namespace fixture");
+    }
+    echo "Stale namespace map fixture: removed " . $removed . " Opera+ plugin mappings.\n";
+' "$JOOMLA_ROOT"
 # Restore the full known catalogue for guest frontend checks after upgrade.
 cp "$ATLAS_FIXTURE" "$ATLAS_CACHE"
 # If guest rendering fails, repeat only the failing HTTP request with debug enabled

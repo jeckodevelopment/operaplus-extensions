@@ -6,6 +6,8 @@ use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
 use OperaPlus\Plugin\System\Masthead\Extension\MastheadPlugin;
+// The installer can boot a plugin before the generated PSR-4 map is refreshed.
+require_once __DIR__ . '/../src/Extension/MastheadPlugin.php';
 return new class implements ServiceProviderInterface {
     public function register(Container $container)
     {
