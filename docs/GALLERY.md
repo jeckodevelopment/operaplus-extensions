@@ -1,19 +1,19 @@
 # Opera+ Gallery — milestone 2.0.0
 
-Storage, editor and frontend renderer implemented. Both gallery plugins are opt-in. No stable release yet.
+Storage, editor and frontend renderer implemented. Both gallery plugins are opt-in. Release 2.0.0 authorized for native backend update, gated on automated checks; manual acceptance is still in progress.
 
 - GAL-02 foundation: shared optimizer gallery mode always emits static WebP (including smaller originals and WebP inputs), 1920 px full and 480 px thumbnail, quality 85 by default. Native Media Manager policy unchanged.
 - GAL-03 foundation: local per-article and per-gallery random identifiers, atomic metadata, bounded photos, exclusive writes, reorder, alt text, captions and credits. Omitted photos are removed only from the private editing copy when committed; previous revisions are kept.
 - GAL-01/GAL-02: administrator editor button, multipart uploads via com_ajax, existing article and checkout checks, core.edit or owner core.edit.own, core.create on com_media, CSRF, Joomla MediaHelper policy, image MIME and size checks, per-file feedback, 2–4 columns. For new articles explicitly save as unpublished first; no automatic publication or save. Existing photo folders and metadata follow public Media Manager semantics: not confidential. Session limits: 12 active galleries, 60 photographs per gallery, bounded conversion. Storage monitoring and confidential media are site policies.
 - GAL-03: choose an existing gallery from the editor dialog to edit a separate revision; old gallery remains unchanged until native article save. Staged writes are restricted to the originating authenticated session (24-hour window, max 12 active stages); explicit cancellation discards the stage. Unfinished galleries have a persisted expiration marker; they cannot render or be forked. The maintenance CLI reports expired stages and can purge only those, never committed or legacy galleries.
 - GAL-04/GAL-05: article-only shortcode rendering bound to the current article, escaped metadata, responsive grid, native dialog lightbox with keyboard/touch navigation, fallback links, conditional assets, credits and captions.
-- GAL-06/GAL-07: native Joomla browser/runtime, installer and storage tests, editor guide, maintenance CLI and manual acceptance checklist. Stable release requires final approval. Native runtime regression also exercises plugin loading with a stale generated namespace map after upgrade; provider bootstrap uses its own installed files without changing Joomla core.
+- GAL-06/GAL-07: native Joomla browser/runtime, installer and storage tests, editor guide, maintenance CLI and manual acceptance checklist. Release publication authorized on 2026-11-28 for backend update testing; final manual acceptance remains open. Native runtime regression exercises upgrading from a stale namespace map; the package refreshes the map through Joomla's native installer API. Provider bootstrap uses its own installed files without changing Joomla core.
 
 ## Guida per la redazione
 
 1. In Estensioni > Plugin, abilitare Content - Galleria fotografica Opera+ e Galleria fotografica Opera+ (editor-xtd), dopo il collaudo del pacchetto.
 2. Per un articolo nuovo, salvarlo come Non pubblicato. Aprire il menu Contenuto CMS dell'editor e selezionare Galleria fotografica Opera+.
-3. Trascinare o selezionare JPG, PNG e WebP. Verificare l'esito per ogni file; ritentare solo i file falliti. Massimo 60 foto, 20 MiB ciascuna o il limite Media/PHP inferiore; massimo 12 megapixel per sorgente. Nomi ordinari con lettere, cifre, spazi, trattini e underscore.
+3. Trascinare o selezionare JPG, PNG e WebP. Verificare l'esito per ogni file; ritentare solo i file falliti. Massimo 60 foto, 20 MiB ciascuna o il limite Media/PHP inferiore (mostrato nel popup, con margine per il POST multipart); massimo 12 megapixel per sorgente. Nomi ordinari con lettere, cifre, spazi, trattini e underscore.
 4. Riordinare con drag and drop o pulsanti, inserire alt, didascalie e crediti; scegliere 2–4 colonne e premere Inserisci galleria.
 5. Per modificare una galleria già inserita, riaprire il pulsante e scegliere la galleria esistente. Le modifiche creano una nuova revisione; applicare e salvare l'articolo.
 6. Verificare anteprime, lightbox, frecce, ESC, swipe, desktop e smartphone. Senza JavaScript, i link aprono la foto grande.
@@ -37,6 +37,10 @@ php libraries/operaplus/cli/gallery-audit.php --purge-expired-stages --offline
 ```
 
 Il comando ricontrolla lo stato sotto lock prima di eliminare. Non elimina revisioni inserite, file inattesi o directory simboliche. Non esegue pulizia automatica schedulata. Le revisioni inserite ma non salvate nell'articolo e le gallerie antecedenti al marcatore persistente sono conservate intenzionalmente.
+
+## Esiti collaudo manuale
+
+- 2026-11-28: GAL-T01 e GAL-T02 superati. Feedback: eliminare lo sfondo grigio delle anteprime, visualizzare il limite di peso per singola fotografia. Correzioni implementate, da ricollaudare.
 
 ## Collaudo manuale finale (staging Opera+)
 

@@ -7,6 +7,7 @@
   <author>Jecko Development</author>
   <license>GNU General Public License version 2 or later</license>
   <description>Opera+ editorial extensions for Joomla 6</description>
+  <scriptfile>script.php</scriptfile>
   <blockChildUninstall>true</blockChildUninstall>
   <files folder="packages">
     <file type="library" id="operaplus">lib_operaplus-2.0.0.zip</file>

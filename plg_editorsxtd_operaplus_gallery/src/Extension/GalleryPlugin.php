@@ -20,6 +20,7 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseInterface;
 use Joomla\Event\SubscriberInterface;
 use OperaPlus\Gallery\Store;
+use OperaPlus\Gallery\UploadLimit;
 use OperaPlus\Plugin\MediaAction\ImageOptimizer\Optimizer;
 
 final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
@@ -58,6 +59,17 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         }
     }
 
+    private function maxUploadBytes(): int
+    {
+        require_once JPATH_LIBRARIES . '/operaplus/src/GalleryUploadLimit.php';
+        return UploadLimit::bytes(
+            (float) ComponentHelper::getParams('com_media')->get('upload_maxsize', 0),
+            (string) ini_get('upload_max_filesize'),
+            (string) ini_get('post_max_size'),
+            filter_var(ini_get('file_uploads'), FILTER_VALIDATE_BOOLEAN)
+        );
+    }
+
     public function setupButtons(EditorButtonsSetupEvent $event): void
     {
         $app = $this->getApplication();
@@ -81,7 +93,7 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         require_once JPATH_LIBRARIES . '/operaplus/src/GalleryStore.php';
         $labels = [];
         foreach (['button','title','draft','drop','choose','columns','credit','alt','caption','individual','remove','up','down',
-            'insert','cancel','busy','ready','failed','empty','limit','retry','confirmcancel','error','existing','new','edit','apply','changed'] as $key) {
+            'insert','cancel','busy','ready','failed','empty','limit','retry','confirmcancel','error','existing','new','edit','apply','changed','maxupload','toolarge','uploadunavailable'] as $key) {
             $labels[$key] = Text::_('PLG_OPGALLERY_' . strtoupper($key));
         }
         $event->getButtonsRegistry()->add(new Button($this->_name, [
@@ -89,7 +101,7 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
             'icon' => 'images', 'name' => $this->_type . '_' . $this->_name,
         ], ['labels' => $labels, 'article' => $id, 'token' => Session::getFormToken(),
             'endpoint' => Uri::base() . 'index.php?option=com_ajax&group=editors-xtd&plugin=operaplusgallery&format=json',
-            'root' => Uri::root(), 'limit' => Store::MAX_IMAGES]));
+            'root' => Uri::root(), 'limit' => Store::MAX_IMAGES, 'maxUploadBytes' => $this->maxUploadBytes()]));
     }
 
     private function store(): Store
@@ -106,8 +118,11 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         $file = $this->getApplication()->getInput()->files->get('photo', null, 'array');
         if (!is_array($file) || ($file['error'] ?? null) !== UPLOAD_ERR_OK || !is_string($file['tmp_name'] ?? null)
             || !is_string($file['name'] ?? null) || !is_uploaded_file($file['tmp_name'])
-            || !is_int($file['size'] ?? null) || $file['size'] < 1 || $file['size'] > 20 * 1024 * 1024) {
+            || !is_int($file['size'] ?? null) || $file['size'] < 1) {
             throw new \InvalidArgumentException(Text::_('PLG_OPGALLERY_INVALID_UPLOAD'));
+        }
+        if ($file['size'] > $this->maxUploadBytes()) {
+            throw new \InvalidArgumentException(Text::_('PLG_OPGALLERY_TOOLARGE'));
         }
         if (!preg_match('/^[\p{L}\p{N}][\p{L}\p{M}\p{N} _-]{0,160}\.(jpe?g|png|webp)$/iuD', $file['name'])) {
             throw new \InvalidArgumentException(Text::_('PLG_OPGALLERY_INVALID_UPLOAD'));
@@ -142,10 +157,6 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         }
         if (!$plugin || !$hasImages) {
             throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (local-images)');
-        }
-        $maxSize = (int) ((float) $media->get('upload_maxsize', 0) * 1024 * 1024);
-        if ($maxSize > 0 && $file['size'] > $maxSize) {
-            throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (upload_maxsize)');
         }
         $info = @getimagesize($file['tmp_name']);
         if (!$info || ($info['mime'] ?? '') !== $types[$ext]) {
@@ -250,7 +261,7 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         } catch (\Throwable $e) {
             $message = $e->getMessage();
             if (in_array($message, [Text::_('PLG_OPGALLERY_INVALID_UPLOAD'), Text::_('PLG_OPGALLERY_MEDIA_POLICY'),
-                Text::_('PLG_OPGALLERY_EMPTY'), Text::_('PLG_OPGALLERY_DENIED'), Text::_('PLG_OPGALLERY_LIMIT')], true) || str_starts_with($message, Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (') || str_starts_with($message, Text::_('PLG_OPGALLERY_CONVERSION') . ' (')) {
+                Text::_('PLG_OPGALLERY_EMPTY'), Text::_('PLG_OPGALLERY_DENIED'), Text::_('PLG_OPGALLERY_LIMIT'), Text::_('PLG_OPGALLERY_TOOLARGE')], true) || str_starts_with($message, Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (') || str_starts_with($message, Text::_('PLG_OPGALLERY_CONVERSION') . ' (')) {
                 throw new \RuntimeException($message);
             }
             throw new \RuntimeException(Text::_('PLG_OPGALLERY_ERROR'));

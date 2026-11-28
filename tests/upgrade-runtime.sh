@@ -32,4 +32,26 @@ test "$(db "SELECT field_id,item_id,value FROM ci_fields_values WHERE item_id='$
 test "$(db "SELECT params FROM ci_modules WHERE id=$module")" = "$settings"
 test "$(db "SELECT COUNT(*) FROM ci_modules_menu WHERE moduleid=$module AND menuid=0")" = 1
 test "$(db "SELECT COUNT(*) FROM ci_extensions WHERE enabled=1 AND element IN ('operaplusatlas','operaplus_templates') AND type='plugin'")" = 2
+# Check exact installed provider bytes, not only the database manifest version.
+for mapping in 'fields/operaplusatlas:plg_fields_operaplusatlas' 'editors-xtd/operaplus_templates:plg_editorsxtd_operaplus_templates' 'system/operaplus_masthead:plg_system_operaplus_masthead' 'media-action/operaplus_imageoptimizer:plg_mediaaction_operaplus_imageoptimizer' 'system/operaplus_imagefeedback:plg_system_operaplus_imagefeedback' 'editors-xtd/operaplus_gallery:plg_editorsxtd_operaplus_gallery' 'content/operaplus_gallery:plg_content_operaplus_gallery'; do
+  installed="$JOOMLA_ROOT/plugins/${mapping%%:*}/services/provider.php"
+  expected="$root/${mapping#*:}/services/provider.php"
+  cmp "$expected" "$installed"
+  diff -qr "$root/${mapping#*:}/src" "$JOOMLA_ROOT/plugins/${mapping%%:*}/src"
+done
+# Inspect Joomla's generated map, not a CI-generated replacement.
+php -r '
+    define("_JEXEC", 1);
+    define("JPATH_BASE", $argv[1] . "/administrator");
+    require JPATH_BASE . "/includes/defines.php";
+    $map = require JPATH_CACHE . "/autoload_psr4.php";
+    foreach (["Fields\\Atlas", "EditorsXtd\\Templates", "System\\Masthead", "MediaAction\\ImageOptimizer", "System\\ImageFeedback", "EditorsXtd\\Gallery", "Content\\Gallery"] as $suffix) {
+        $key = "OperaPlus\\Plugin\\" . $suffix . "\\";
+        if (!isset($map[$key]) || !is_dir($map[$key][0])) {
+            throw new RuntimeException("Missing installed namespace: " . $key);
+        }
+    }
+    echo "Installed namespace map verified.\n";
+' "$JOOMLA_ROOT"
+echo "Installed plugin providers and sources match the built source."
 echo "Native update discovery and 0.3.3 -> $version upgrade preserved package, module settings, menu assignment, enabled plugins and article associations."

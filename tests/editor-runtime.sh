@@ -19,8 +19,10 @@ php -r '
     if ($count !== 1) { throw new RuntimeException("Missing live_site configuration"); }
     file_put_contents($path, $config);
 ' "$JOOMLA_ROOT/configuration.php"
-# Local ephemeral web server only.
-(cd "$JOOMLA_ROOT" && php -S 127.0.0.1:8080 -t "$JOOMLA_ROOT") > "$RUNNER_TEMP/joomla-web.log" 2>&1 &
+# Local ephemeral web server only. CLI installation happens in a separate
+# process: do not let its HTTP fixture execute stale cached baseline bytecode.
+# Keep the explicit stale PSR-4 map fixture below to test provider resilience.
+(cd "$JOOMLA_ROOT" && exec php -d opcache.enable_cli=0 -S 127.0.0.1:8080 -t "$JOOMLA_ROOT") > "$RUNNER_TEMP/joomla-web.log" 2>&1 &
 server=$!
 trap 'kill "$server" 2>/dev/null || true; tail -n 80 "$RUNNER_TEMP/joomla-web.log"' EXIT
 for i in {1..30}; do
@@ -47,11 +49,8 @@ cp "$ATLAS_FIXTURE" "$ATLAS_CACHE"
 node tests/atlas-field-runtime.mjs
 
 
-# Exercise update discovery and an upgrade from the actual tested preview.
-bash tests/upgrade-runtime.sh
-# Reproduce a stale extension namespace map in this disposable installation.
-# Provider bootstrap must not depend on a newly installed namespace already
-# being visible to the separate HTTP PHP process.
+# Simulate a stale extension namespace map BEFORE native update. The package
+# installer must restore its mappings, without CI repairing them afterward.
 php -r '
     define("_JEXEC", 1);
     define("JPATH_BASE", $argv[1] . "/administrator");
@@ -66,6 +65,17 @@ php -r '
     }
     echo "Stale namespace map fixture: removed " . $removed . " Opera+ plugin mappings.\n";
 ' "$JOOMLA_ROOT"
+# Exercise native upgrade; verify the installed namespace map and files.
+bash tests/upgrade-runtime.sh
+# A separate PHP HTTP process must observe the newly installed files.
+kill "$server" 2>/dev/null || true
+wait "$server" 2>/dev/null || true
+(cd "$JOOMLA_ROOT" && exec php -d opcache.enable_cli=0 -S 127.0.0.1:8080 -t "$JOOMLA_ROOT") >> "$RUNNER_TEMP/joomla-web.log" 2>&1 &
+server=$!
+for i in {1..30}; do
+  if curl -fsS http://127.0.0.1:8080/administrator/index.php >/dev/null; then break; fi
+  sleep 1
+done
 # Restore the full known catalogue for guest frontend checks after upgrade.
 cp "$ATLAS_FIXTURE" "$ATLAS_CACHE"
 # If guest rendering fails, repeat only the failing HTTP request with debug enabled

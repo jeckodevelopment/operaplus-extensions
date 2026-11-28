@@ -51,7 +51,13 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
   const picker = create('input');
   picker.type = 'file'; picker.accept = 'image/jpeg,image/png,image/webp'; picker.multiple = true;
   picker.setAttribute('aria-label', l.choose);
-  drop.append(picker);
+  const maxBytes = Number(options.maxUploadBytes);
+  const validLimit = Number.isSafeInteger(maxBytes) && maxBytes > 0;
+  const maxText = validLimit ? new Intl.NumberFormat(document.documentElement.lang || undefined, {maximumFractionDigits:2}).format(Math.floor(maxBytes / 1048576 * 100) / 100) + ' MiB' : '';
+  const limitNote = create('p', validLimit ? l.maxupload.replace('%s',maxText) : l.uploadunavailable,'op-gallery-upload-limit');
+  limitNote.id = 'op-gallery-upload-limit';
+  picker.setAttribute('aria-describedby',limitNote.id);
+  drop.append(picker,limitNote);
   const credit = create('input', '', 'form-control'); credit.maxLength = 250;
   const columns = create('select', '', 'form-select');
   for (const count of [2,3,4]) {
@@ -70,7 +76,7 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
   actions.append(insert, cancel);
   dialog.append(existingLabel, drop, status, log, field(l.credit,credit), field(l.columns,columns), preview, actions);
   const controls = () => {
-    picker.disabled = busy;
+    picker.disabled = busy || !validLimit;
     existing.disabled = busy || !!gallery;
     insert.disabled = busy || !photos.length;
     cancel.disabled = busy;
@@ -96,7 +102,8 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
     if (gallery) data.set('gallery', gallery);
     for (const [k,v] of Object.entries(args)) data.set(k,v);
     const response = await fetch(options.endpoint, {method:'POST',body:data,credentials:'same-origin',cache:'no-store'});
-    const result = await response.json();
+    let result;
+    try { result = await response.json(); } catch(error) { throw new Error(response.status === 413 ? l.toolarge : l.error); }
     if (!response.ok || !result.success || !Array.isArray(result.data) || !result.data[0]) {
       throw new Error(typeof result.message === 'string' && result.message ? result.message : l.error);
     }
@@ -156,7 +163,7 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
     controls();
   }
   async function upload(list) {
-    if(busy || !list.length)return;
+    if(busy || !validLimit || !list.length)return;
     busy=true;controls();
     let failed=0;
     try {
@@ -172,7 +179,8 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
         status.textContent=l.busy+' '+(i+1)+' / '+files.length;
         const item=create('li',file.name+' — '+l.busy);log.append(item);
         try {
-          if(file.size>20*1024*1024 || !/\.(jpe?g|png|webp)$/i.test(file.name))throw new Error(l.failed);
+          if(file.size>maxBytes)throw new Error(l.toolarge);
+          if(!/\.(jpe?g|png|webp)$/i.test(file.name))throw new Error(l.failed);
           const result=await request('upload',{photo:file});
           if(!photoId(result.id))throw new Error(l.error);
           expected.push(result.id);photos.push(result);

@@ -44,15 +44,21 @@ try {
   assert.ok((await page.evaluate(()=>tinymce.get('jform_articletext').getContent())).includes('Existing article text'),'Fixture after initial save');
   await page.evaluate(()=>{const ed=tinymce.get('jform_articletext');ed.focus();ed.selection.select(ed.getBody(),true);ed.selection.collapse(false);});
   await open();
+  const limitNote=dialog.locator('.op-gallery-upload-limit');
+  await limitNote.waitFor();
+  assert.match(await limitNote.innerText(),/Maximum file size per photo: [\d.,]+ MiB/);
   await dialog.locator('input[type=file]').setInputFiles([
+    {name:'oversized.png',mimeType:'image/png',buffer:Buffer.alloc(20*1024*1024+1)},
     {name:'first.png',mimeType:'image/png',buffer:png},
     {name:'broken.png',mimeType:'image/png',buffer:Buffer.from('not an image')},
     {name:'second.png',mimeType:'image/png',buffer:png},
   ]);
   await dialog.getByText('second.png — WebP ready',{exact:true}).waitFor({timeout:60000});
   await dialog.getByText('broken.png — Upload failed',{exact:false}).waitFor();
+  await dialog.getByText('oversized.png — Upload failed: The photo exceeds the allowed upload size.',{exact:true}).waitFor();
   const cards=dialog.locator('.op-gallery-photo');
   assert.equal(await cards.count(),2);
+  assert.equal(await cards.first().locator('img').evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
   await dialog.getByLabel('Gallery photo credit').fill('CI photographer');
   await cards.nth(1).getByLabel('Caption',{exact:true}).fill('Second image');
   await cards.nth(1).getByRole('button',{name:'Move up'}).click();
@@ -112,6 +118,7 @@ try {
   assert.equal(await guest.locator('script[src*="plg_content_operaplus_gallery"]').count(),1);
   const grid=guest.locator('.op-photo-gallery');
   await grid.waitFor();
+  assert.equal(await grid.locator('.op-photo-link').first().evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
   assert.equal(await grid.locator('a.op-photo-link').count(),2);
   assert.ok((await grid.innerText()).includes('CI photographer'));
   assert.ok((await grid.innerText()).includes('Updated caption'));
