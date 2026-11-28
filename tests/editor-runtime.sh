@@ -19,8 +19,10 @@ php -r '
     if ($count !== 1) { throw new RuntimeException("Missing live_site configuration"); }
     file_put_contents($path, $config);
 ' "$JOOMLA_ROOT/configuration.php"
-# Local ephemeral web server only.
-(cd "$JOOMLA_ROOT" && php -S 127.0.0.1:8080 -t "$JOOMLA_ROOT") > "$RUNNER_TEMP/joomla-web.log" 2>&1 &
+# Local ephemeral web server only. CLI installation happens in a separate
+# process: do not let its HTTP fixture execute stale cached baseline bytecode.
+# Keep the explicit stale PSR-4 map fixture below to test provider resilience.
+(cd "$JOOMLA_ROOT" && php -d opcache.enable_cli=0 -S 127.0.0.1:8080 -t "$JOOMLA_ROOT") > "$RUNNER_TEMP/joomla-web.log" 2>&1 &
 server=$!
 trap 'kill "$server" 2>/dev/null || true; tail -n 80 "$RUNNER_TEMP/joomla-web.log"' EXIT
 for i in {1..30}; do
