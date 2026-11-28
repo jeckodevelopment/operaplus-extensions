@@ -41,7 +41,9 @@ Il comando ricontrolla lo stato sotto lock prima di eliminare. Non elimina revis
 ## Esiti collaudo manuale
 
 - 2026-11-28: GAL-T01 e GAL-T02 superati. Feedback: eliminare lo sfondo grigio delle anteprime, visualizzare il limite di peso per singola fotografia. Correzioni verificate con esito OK sulla 2.0.0.
-- 2026-11-28: GAL-T03 e GAL-T04 superati. Feedback: anteprime con altezza uniforme e gallerie centrate orizzontalmente. Correzione 2.0.1 in verifica: riquadri 4:3, ritaglio visivo centrato (senza modificare i file), righe incomplete centrate.
+- 2026-11-28: GAL-T03 e GAL-T04 superati. Feedback: anteprime con altezza uniforme e gallerie centrate orizzontalmente. Correzione 2.0.1 verificata con esito OK: riquadri 4:3, ritaglio visivo centrato (senza modificare i file), righe incomplete centrate.
+
+- 2026-11-28: GAL-T05 e GAL-T06 superati sulla 2.0.1. Anteprime uniformi e centratura delle gallerie OK; checklist frontend completa (8/8), nessuna anomalia segnalata. Totale 6/9; GAL-T07–T09 da eseguire.
 
 ## Collaudo manuale finale (staging Opera+)
 
