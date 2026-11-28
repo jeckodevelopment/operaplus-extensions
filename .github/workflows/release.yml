@@ -3,7 +3,7 @@ on:
   push:
     tags: ['v*']
     branches: [main]
-    paths: ['docs/releases/1.0.0-approved.md', 'docs/releases/1.1.1-approved.md']
+    paths: ['docs/releases/1.0.0-approved.md', 'docs/releases/1.1.1-approved.md', 'docs/releases/2.0.0-approved.md']
 permissions:
   contents: read
 jobs:
@@ -30,7 +30,7 @@ jobs:
             test "$GITHUB_REF_NAME" = "v$version"
           else
             test "$GITHUB_REF" = refs/heads/main
-            [[ "$version" == 1.0.0 || "$version" == 1.1.1 ]]
+            [[ "$version" == 1.0.0 || "$version" == 1.1.1 || "$version" == 2.0.0 ]]
             test -f "docs/releases/$version-approved.md"
           fi
           git fetch origin main
@@ -45,7 +45,7 @@ jobs:
           tag="v$version"
           if [[ "$GITHUB_REF_TYPE" == branch ]]; then
             # Explicit stable approval on main; never overwrite a release.
-            [[ "$version" == 1.0.0 || "$version" == 1.1.1 ]]
+            [[ "$version" == 1.0.0 || "$version" == 1.1.1 || "$version" == 2.0.0 ]]
             if gh release view "$tag" >/dev/null 2>&1; then
               echo "Release already exists; refusing to replace immutable assets."
               exit 1
@@ -57,7 +57,7 @@ jobs:
             gh release create "$GITHUB_REF_NAME" dist/*.zip dist/updates.xml --verify-tag --latest --title "Opera+ Extensions $version" --generate-notes
           fi
       - name: Verify public stable update feed and package
-        if: startsWith(github.ref, 'refs/tags/v1.') || github.ref == 'refs/heads/main'
+        if: (startsWith(github.ref, 'refs/tags/v') && !startsWith(github.ref, 'refs/tags/v0.')) || github.ref == 'refs/heads/main'
         run: |
           set -euo pipefail
           version="$(cat VERSION)"

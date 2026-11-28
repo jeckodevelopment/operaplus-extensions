@@ -50,6 +50,10 @@ assert {f.text.strip() for f in package.findall("./files/file")} == expected
 filename = f"pkg_operaplus-{version}.zip"
 with ZipFile(DIST / filename, "w", ZIP_DEFLATED) as archive:
     archive.write(manifest, "pkg_operaplus.xml")
+    script = package.findtext("scriptfile")
+    if script:
+        assert (manifest.parent / script).is_file()
+        archive.write(manifest.parent / script, script)
     for item in package.findall("./files/file"):
         archive.write(DIST / item.text.strip(), "packages/" + item.text.strip())
 
