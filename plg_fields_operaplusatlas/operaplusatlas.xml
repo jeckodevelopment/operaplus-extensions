@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="plugin" group="fields" method="upgrade">
-  <name>PLG_FIELDS_OPERAPLUSATLAS</name><version>1.1.1</version>
-  <creationDate>2026-11-27</creationDate><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
+  <name>PLG_FIELDS_OPERAPLUSATLAS</name><version>2.0.0</version>
+  <creationDate>2026-11-28</creationDate><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
   <description>PLG_FIELDS_OPERAPLUSATLAS_XML_DESCRIPTION</description>
   <namespace path="src">OperaPlus\Plugin\Fields\Atlas</namespace>
   <files><folder plugin="operaplusatlas">services</folder><folder>src</folder><folder>params</folder><folder>tmpl</folder></files>
