@@ -26,7 +26,12 @@ before="$(db "SELECT field_id,item_id,value FROM ci_fields_values WHERE item_id=
 test -n "$before"
 settings="$(db "SELECT params FROM ci_modules WHERE id=$module")"
 # Adopt the previously standalone sitemap without losing its state or settings.
-(cd "$JOOMLA_ROOT" && php cli/joomla.php extension:install --no-interaction --path="$root/dist/plg_system_operaplus_sitemap-$version.zip")
+standalone="$(mktemp -d)"
+git archive 6ec2028ac67101a021b68d3dd74a4a5ceb47267e:plg_system_operaplus_sitemap | tar -x -C "$standalone"
+(cd "$standalone" && zip -qr "$RUNNER_TEMP/sitemap-1.0.0.zip" .)
+(cd "$JOOMLA_ROOT" && php cli/joomla.php extension:install --no-interaction --path="$RUNNER_TEMP/sitemap-1.0.0.zip")
+rm -rf "$standalone"
+test "$(db "SELECT JSON_UNQUOTE(JSON_EXTRACT(manifest_cache,'$.version')) FROM ci_extensions WHERE type='plugin' AND folder='system' AND element='operaplus_sitemap'")" = 1.0.0
 db "UPDATE ci_extensions SET enabled=1, params='{\"origin\":\"https://opera.plus\",\"external\":\"/atlas/sitemap.xml\",\"exclude_menu\":\"77\"}' WHERE type='plugin' AND folder='system' AND element='operaplus_sitemap'"
 sitemap_id="$(db "SELECT extension_id FROM ci_extensions WHERE type='plugin' AND folder='system' AND element='operaplus_sitemap'")"
 sitemap_settings="$(db "SELECT params FROM ci_extensions WHERE extension_id=$sitemap_id")"
