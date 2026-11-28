@@ -136,6 +136,61 @@ final class Store
         return $gallery;
     }
 
+    /** Copy a gallery for editing without mutating a published article revision. */
+    public function fork(int $article, string $source): string
+    {
+        $origin = $this->folder($article, $source);
+        $new = $this->create($article);
+        $target = $this->folder($article, $new);
+        try {
+            $this->locked($origin, function () use ($origin, $target): void {
+                $doc = $this->metadata($origin);
+                foreach ($doc['images'] as $photo) {
+                    foreach (['.webp', '-thumb.webp'] as $suffix) {
+                        $name = $photo['id'] . $suffix;
+                        $from = $origin . '/' . $name;
+                        $to = $target . '/' . $name;
+                        if (is_link($from) || !is_file($from) || filesize($from) > 20 * 1024 * 1024) {
+                            throw new \RuntimeException('Invalid source photo');
+                        }
+                        $info = @getimagesize($from);
+                        if (!$info || $info[2] !== IMAGETYPE_WEBP || !copy($from, $to)) {
+                            throw new \RuntimeException('Cannot copy gallery photo');
+                        }
+                    }
+                }
+                $this->writeMetadata($target, $doc);
+            });
+            return $new;
+        } catch (\Throwable $e) {
+            $this->discard($article, $new);
+            throw $e;
+        }
+    }
+
+    /** Only call for an authenticated, session-owned, uncommitted gallery. */
+    public function discard(int $article, string $gallery): void
+    {
+        $folder = $this->folder($article, $gallery);
+        $this->locked($folder, function () use ($folder): void {
+            foreach (new \FilesystemIterator($folder) as $entry) {
+                if ($entry->getFilename() === '.gallery.lock') { continue; }
+                if ($entry->isLink() || !$entry->isFile()
+                    || !preg_match('/^(?:[a-f0-9]{24}(?:-thumb)?\.webp|gallery\.json|\.metadata-[a-f0-9]{24})$/D', $entry->getFilename())) {
+                    throw new \RuntimeException('Unexpected gallery file; manual review required');
+                }
+            }
+            foreach (new \FilesystemIterator($folder) as $entry) {
+                if ($entry->getFilename() !== '.gallery.lock' && !unlink($entry->getPathname())) {
+                    throw new \RuntimeException('Cannot discard gallery file');
+                }
+            }
+        });
+        if (!unlink($folder . '/.gallery.lock') || !rmdir($folder)) {
+            throw new \RuntimeException('Cannot discard gallery folder');
+        }
+    }
+
     public function read(int $article, string $gallery): array
     {
         return $this->metadata($this->folder($article, $gallery));

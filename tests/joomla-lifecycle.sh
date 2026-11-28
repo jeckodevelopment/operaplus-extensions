@@ -4,7 +4,7 @@ set -euo pipefail
 : "${JOOMLA_ROOT:?Set JOOMLA_ROOT to the isolated test installation}"
 test -f "$JOOMLA_ROOT/configuration.php"
 packages=(lib_operaplus plg_fields_operaplusatlas mod_operaplus_atlas mod_operaplus_cta plg_editorsxtd_operaplus_templates plg_system_operaplus_masthead plg_mediaaction_operaplus_imageoptimizer plg_system_operaplus_imagefeedback plg_editorsxtd_operaplus_gallery plg_content_operaplus_gallery)
-elements=(operaplus operaplusatlas mod_operaplus_atlas mod_operaplus_cta operaplus_templates operaplus_masthead operaplus_imageoptimizer operaplus_imagefeedback operaplus_gallery)
+elements=(operaplus operaplusatlas mod_operaplus_atlas mod_operaplus_cta operaplus_templates operaplus_masthead operaplus_imageoptimizer operaplus_imagefeedback operaplus_gallery operaplus_gallery)
 types=(library plugin module module plugin plugin plugin plugin plugin plugin)
 groups=("" fields "" "" editors-xtd system media-action system editors-xtd content)
 root="$(pwd)"

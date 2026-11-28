@@ -55,6 +55,15 @@ try {
     $doc = $store->update(42, $gallery, [$second], 'Fotografo', array_reverse($ids));
     check(count($doc['images']) === 1 && is_file($full), 'Removal preserves previous image file');
     check($doc === $store->read(42, $gallery), 'Metadata persisted');
+    $fork = $store->fork(42, $gallery);
+    $copy = $store->read(42, $fork);
+    check($copy === $doc, 'Fork preserves metadata');
+    $edit = $copy['images'][0]; $edit['caption'] = 'New caption';
+    $store->update(42, $fork, [$edit], '', [$edit['id']]);
+    check($store->read(42, $gallery) === $doc, 'Original revision unchanged');
+    $store->discard(42, $fork);
+    rejects(fn () => $store->read(42, $fork));
+    check($store->read(42, $gallery) === $doc, 'Discard does not affect original');
     symlink($root . '/galleries/article-42', $root . '/galleries/article-99');
     rejects(fn () => $store->read(99, $gallery));
     echo "Gallery foundation: WebP variants, storage, ordering, text, removal, validation and isolation passed.\n";

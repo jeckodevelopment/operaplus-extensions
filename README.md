@@ -4,7 +4,7 @@ Joomla 6 extensions for the Opera+ magazine. Development milestone 2.0.0 (unrele
 
 ## 2.0.0 — development
 
-- Opera+ Gallery: storage, editor upload and responsive frontend lightbox; opt-in, pending acceptance. See [gallery plan](docs/GALLERY.md).
+- Opera+ Gallery: storage, editor upload, revision-safe editing and responsive frontend lightbox; opt-in, pending acceptance. See [gallery plan](docs/GALLERY.md).
 
 ## 1.1.1 — published stable
 

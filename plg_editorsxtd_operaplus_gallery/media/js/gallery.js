@@ -14,6 +14,7 @@ const button = (text, fn, cls = 'btn btn-secondary btn-sm') => {
 };
 const field = (text, node) => {
   const label = create('label', text);
+  node.setAttribute('aria-label',text);
   label.append(node);
   return label;
 };
@@ -34,7 +35,7 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
     dialog.showModal();
     return;
   }
-  let gallery = '', photos = [], expected = [], busy = false, inserted = false, dragId = '';
+  let gallery = '', photos = [], expected = [], busy = false, inserted = false, dragId = '', originalToken = '';
   const status = create('p', '', 'op-gallery-status');
   status.setAttribute('role', 'status');
   const log = create('ul', '', 'op-gallery-log');
@@ -51,13 +52,20 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
     const opt = create('option', String(count)); opt.value = String(count); columns.append(opt);
   }
   columns.value = '4';
+  const existing = create('select','','form-select');
+  const newOption = create('option',l.new);newOption.value='';existing.append(newOption);
+  const refs = Array.from(editor.getValue().matchAll(/\{operaplusgallery\s+id=(?:"|&quot;)([a-f0-9]{24})(?:"|&quot;)\s+columns=(?:"|&quot;)([234])(?:"|&quot;)\}/g));
+  refs.forEach((ref,i)=>{const option=create('option',l.existing+' '+(i+1));option.value=String(i+1);existing.append(option);});
+  const existingLabel=field(l.existing,existing);
+  existingLabel.hidden=!refs.length;
   const actions = create('div', '', 'op-gallery-actions');
   const insert = button(l.insert, () => save(), 'btn btn-primary');
   const cancel = button(l.cancel, () => attemptClose());
   actions.append(insert, cancel);
-  dialog.append(drop, status, log, field(l.credit,credit), field(l.columns,columns), preview, actions);
+  dialog.append(existingLabel, drop, status, log, field(l.credit,credit), field(l.columns,columns), preview, actions);
   const controls = () => {
     picker.disabled = busy;
+    existing.disabled = busy || !!gallery;
     insert.disabled = busy || !photos.length;
     cancel.disabled = busy;
     credit.disabled = busy;
@@ -65,9 +73,14 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
     preview.querySelectorAll('button,input').forEach(el => el.disabled = busy);
     preview.querySelectorAll('[draggable]').forEach(el => el.draggable = !busy);
   };
-  const attemptClose = () => {
-    if (busy) return;
-    if (!gallery || inserted || window.confirm(l.confirmcancel)) close();
+  const attemptClose = async () => {
+    if(busy)return;
+    if(!gallery||inserted){close();return;}
+    if(!window.confirm(l.confirmcancel))return;
+    busy=true;controls();
+    try {await request('discard');close();}
+    catch(error){status.textContent=error.message;}
+    finally{busy=false;controls();}
   };
   dialog.addEventListener('cancel', e => {e.preventDefault(); attemptClose();});
   async function request(action, args={}) {
@@ -83,6 +96,19 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
     }
     return result.data[0];
   }
+  existing.addEventListener('change',async()=>{
+    const ref=refs[Number(existing.value)-1];
+    if(busy||gallery||!ref)return;
+    busy=true;controls();
+    try {
+      const result=await request('fork',{gallery:ref[1]});
+      if(!photoId(result.gallery)||!Array.isArray(result.images))throw new Error(l.error);
+      gallery=result.gallery;originalToken=ref[0];photos=result.images;expected=photos.map(p=>p.id);
+      credit.value=result.credit||'';columns.value=ref[2];insert.textContent=l.apply;render();
+      status.textContent=l.ready+' ('+photos.length+')';
+    }catch(error){existing.value='';status.textContent=error.message;}
+    finally{busy=false;controls();}
+  });
   function render() {
     preview.replaceChildren();
     photos.forEach((photo,i) => {
@@ -156,10 +182,14 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
     if(busy||!photos.length)return;
     busy=true;controls();status.textContent=l.busy;
     try {
-      await request('save',{metadata:JSON.stringify({images:photos,credit:credit.value,expected})});
       const count=Number(columns.value);
       if(![2,3,4].includes(count)||!photoId(gallery))throw new Error(l.error);
-      editor.replaceSelection('<p>{operaplusgallery id="'+gallery+'" columns="'+count+'"}</p>');
+      const token='{operaplusgallery id="'+gallery+'" columns="'+count+'"}';
+      const content=editor.getValue();
+      if(originalToken&&!content.includes(originalToken))throw new Error(l.changed);
+      await request('save',{metadata:JSON.stringify({images:photos,credit:credit.value,expected})});
+      if(originalToken)editor.setValue(content.split(originalToken).join(token));
+      else editor.replaceSelection('<p>'+token+'</p>');
       inserted=true;close();
     }catch(error){status.textContent=error.message;}
     finally{busy=false;controls();}

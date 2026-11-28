@@ -81,7 +81,7 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         require_once JPATH_LIBRARIES . '/operaplus/src/GalleryStore.php';
         $labels = [];
         foreach (['button','title','draft','drop','choose','columns','credit','alt','caption','individual','remove','up','down',
-            'insert','cancel','busy','ready','failed','empty','limit','retry','confirmcancel','error'] as $key) {
+            'insert','cancel','busy','ready','failed','empty','limit','retry','confirmcancel','error','existing','new','edit','apply','changed'] as $key) {
             $labels[$key] = Text::_('PLG_OPGALLERY_' . strtoupper($key));
         }
         $event->getButtonsRegistry()->add(new Button($this->_name, [
@@ -191,14 +191,34 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         $action = $post->getCmd('action');
         $gallery = $post->getString('gallery');
         $store = $this->store();
+        $session = $app->getSession();
+        $staged = $session->get('operaplus.gallery.staged', []);
+        if (!is_array($staged)) { $staged = []; }
+        $staged = array_filter($staged, static fn ($entry) => is_array($entry) && ($entry['expires'] ?? 0) >= time());
         try {
-            if ($action === 'create') {
-                $gallery = $store->create($article);
-                $event->addResult(['gallery' => $gallery, 'images' => [], 'credit' => '']);
+            if ($action === 'create' || $action === 'fork') {
+                if (count($staged) >= 12) {
+                    throw new \RuntimeException(Text::_('PLG_OPGALLERY_LIMIT'));
+                }
+                $gallery = $action === 'fork' ? $store->fork($article, $gallery) : $store->create($article);
+                $staged[$gallery] = ['article' => $article, 'expires' => time() + 86400];
+                $session->set('operaplus.gallery.staged', $staged);
+                $event->addResult(['gallery' => $gallery] + $store->read($article, $gallery));
                 return;
             }
             if (!Store::validId($gallery)) {
                 throw new \InvalidArgumentException(Text::_('PLG_OPGALLERY_ERROR'));
+            }
+            if (in_array($action, ['upload', 'save', 'discard'], true)
+                && (int) ($staged[$gallery]['article'] ?? 0) !== $article) {
+                throw new \RuntimeException(Text::_('PLG_OPGALLERY_DENIED'));
+            }
+            if ($action === 'discard') {
+                $store->discard($article, $gallery);
+                unset($staged[$gallery]);
+                $session->set('operaplus.gallery.staged', $staged);
+                $event->addResult(['discarded' => true]);
+                return;
             }
             if ($action === 'upload') {
                 $photo = $this->upload($store, $article, $gallery);
@@ -219,13 +239,16 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
                     || !is_array($metadata['expected'] ?? null) || !is_string($metadata['credit'] ?? null)) {
                     throw new \InvalidArgumentException(Text::_('PLG_OPGALLERY_EMPTY'));
                 }
-                $event->addResult($store->update($article, $gallery, $metadata['images'], $metadata['credit'], $metadata['expected']));
+                $doc = $store->update($article, $gallery, $metadata['images'], $metadata['credit'], $metadata['expected']);
+                unset($staged[$gallery]);
+                $session->set('operaplus.gallery.staged', $staged);
+                $event->addResult($doc);
                 return;
             }
         } catch (\Throwable $e) {
             $message = $e->getMessage();
             if (in_array($message, [Text::_('PLG_OPGALLERY_INVALID_UPLOAD'), Text::_('PLG_OPGALLERY_MEDIA_POLICY'),
-                Text::_('PLG_OPGALLERY_EMPTY')], true) || str_starts_with($message, Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (') || str_starts_with($message, Text::_('PLG_OPGALLERY_CONVERSION') . ' (')) {
+                Text::_('PLG_OPGALLERY_EMPTY'), Text::_('PLG_OPGALLERY_DENIED'), Text::_('PLG_OPGALLERY_LIMIT')], true) || str_starts_with($message, Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (') || str_starts_with($message, Text::_('PLG_OPGALLERY_CONVERSION') . ' (')) {
                 throw new \RuntimeException($message);
             }
             throw new \RuntimeException(Text::_('PLG_OPGALLERY_ERROR'));

@@ -76,6 +76,19 @@ try {
   await page.reload();
   await page.waitForFunction(()=>tinymce.get('jform_articletext')?.initialized);
   assert.ok((await page.evaluate(()=>tinymce.get('jform_articletext').getContent())).includes(match[1]));
+  // Existing gallery editing uses a copy: cancel leaves the old revision untouched.
+  await open();
+  await dialog.getByLabel('Existing galleries',{exact:true}).selectOption('1');
+  await dialog.getByRole('button',{name:'Apply gallery changes'}).waitFor();
+  await dialog.locator('.op-gallery-photo').first().getByLabel('Caption',{exact:true}).fill('Updated caption');
+  await dialog.getByRole('button',{name:'Apply gallery changes'}).click();
+  await dialog.waitFor({state:'hidden'});
+  const updatedContent=await page.evaluate(()=>tinymce.get('jform_articletext').getContent());
+  const edited=updatedContent.match(/\{operaplusgallery id="([a-f0-9]{24})" columns="3"\}/);
+  assert.ok(edited && edited[1]!==match[1]);
+  assert.equal(JSON.parse(readFileSync(join(folder,'gallery.json'),'utf8')).images[0].caption,'Second image');
+  await page.getByRole('button',{name:'Save',exact:true}).click();
+  await page.waitForLoadState('networkidle');
   const db = sql => execFileSync('mysql',['--protocol=TCP','-h','127.0.0.1','-u','joomla_test','-N','-B','joomla_test','-e',sql],{encoding:'utf8'});
   db('UPDATE ci_content SET state=1, access=1, publish_up=NULL, publish_down=NULL WHERE id='+article);
   const guest = await browser.newPage({viewport:{width:1440,height:1000}});
@@ -84,7 +97,7 @@ try {
   await grid.waitFor();
   assert.equal(await grid.locator('a.op-photo-link').count(),2);
   assert.ok((await grid.innerText()).includes('CI photographer'));
-  assert.ok((await grid.innerText()).includes('Second image'));
+  assert.ok((await grid.innerText()).includes('Updated caption'));
   const first=grid.locator('a.op-photo-link').first();
   const href=await first.getAttribute('href');
   await first.click();
