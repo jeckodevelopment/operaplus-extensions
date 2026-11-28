@@ -28,6 +28,7 @@ jobs:
           php tests/gallery-store.php
           php tests/gallery-upload-limit.php
           php tests/gallery-renderer.php
+          php tests/editorial-box-renderer.php
           node tests/editor-templates.mjs
       - name: Validate manifests and build ZIPs
         run: python3 tools/package.py
