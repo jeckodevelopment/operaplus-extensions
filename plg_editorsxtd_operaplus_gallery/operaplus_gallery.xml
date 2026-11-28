@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="plugin" group="editors-xtd" method="upgrade">
+  <name>PLG_OPGALLERY_BUTTON</name><version>2.0.0</version>
+  <creationDate>2026-11-28</creationDate><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
+  <description>PLG_OPGALLERY_DESCRIPTION</description>
+  <namespace path="src">OperaPlus\Plugin\EditorsXtd\Gallery</namespace>
+  <files><folder plugin="operaplus_gallery">services</folder><folder>src</folder></files>
+  <media destination="plg_editors-xtd_operaplus_gallery" folder="media"><folder>js</folder><folder>css</folder></media>
+  <languages>
+    <language tag="en-GB">language/en-GB/plg_editors-xtd_operaplus_gallery.ini</language>
+    <language tag="en-GB">language/en-GB/plg_editors-xtd_operaplus_gallery.sys.ini</language>
+    <language tag="it-IT">language/it-IT/plg_editors-xtd_operaplus_gallery.ini</language>
+    <language tag="it-IT">language/it-IT/plg_editors-xtd_operaplus_gallery.sys.ini</language>
+  </languages>
+  <config><fields name="params"><fieldset name="basic"><field name="quality" type="number" label="PLG_OPGALLERY_QUALITY" min="50" max="100" step="1" default="85" /></fieldset></fields></config>
+</extension>

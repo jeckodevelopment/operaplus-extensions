@@ -24,5 +24,5 @@ done
 node tests/web-package-upload.mjs
 mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "SELECT element, type FROM ci_extensions WHERE package_id=(SELECT extension_id FROM ci_extensions WHERE element='pkg_operaplus' AND type='package') ORDER BY element;"
 count="$(mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "SELECT COUNT(*) FROM ci_extensions WHERE package_id=(SELECT extension_id FROM ci_extensions WHERE element='pkg_operaplus' AND type='package');")"
-test "$count" = 8
-echo "Native web installer registered all eight package children."
+test "$count" = 10
+echo "Native web installer registered all ten package children."
