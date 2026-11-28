@@ -1,10 +1,10 @@
 name: Opera+ Sitemap preview
 on:
   pull_request:
-    paths: ['plg_system_operaplus_sitemap/**', 'tests/sitemap.php', '.github/workflows/sitemap.yml', 'docs/SITEMAP.md']
+    paths: ['plg_system_operaplus_sitemap/**', 'tests/sitemap.php', '.github/workflows/sitemap.yml', 'docs/SITEMAP.md', 'VERSION', 'tools/package.py']
   push:
     branches: [main]
-    paths: ['plg_system_operaplus_sitemap/**', 'tests/sitemap.php', '.github/workflows/sitemap.yml', 'docs/SITEMAP.md']
+    paths: ['plg_system_operaplus_sitemap/**', 'tests/sitemap.php', '.github/workflows/sitemap.yml', 'docs/SITEMAP.md', 'VERSION', 'tools/package.py']
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,10 +22,9 @@ jobs:
       - run: php tests/sitemap.php
       - name: Build standalone preview ZIP
         run: |
-          mkdir -p dist
-          (cd plg_system_operaplus_sitemap && zip -qr ../dist/plg_system_operaplus_sitemap-1.0.0.zip .)
-          unzip -t dist/plg_system_operaplus_sitemap-1.0.0.zip
+          python3 tools/package.py
+          unzip -t "dist/plg_system_operaplus_sitemap-$(cat VERSION).zip"
       - uses: actions/upload-artifact@v4
         with:
           name: operaplus-sitemap-preview
-          path: dist/plg_system_operaplus_sitemap-1.0.0.zip
+          path: dist/plg_system_operaplus_sitemap-*.zip

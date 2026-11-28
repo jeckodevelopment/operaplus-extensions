@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension type="plugin" group="editors-xtd" method="upgrade">
-  <name>PLG_OPGALLERY_BUTTON</name><version>2.0.1</version>
+  <name>PLG_OPGALLERY_BUTTON</name><version>2.1.0</version>
   <creationDate>2026-11-28</creationDate><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
   <description>PLG_OPGALLERY_DESCRIPTION</description>
   <namespace path="src">OperaPlus\Plugin\EditorsXtd\Gallery</namespace>

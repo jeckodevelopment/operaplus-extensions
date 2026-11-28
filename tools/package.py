@@ -1,4 +1,4 @@
-"""Build ten individual packages and the cumulative Joomla package."""
+"""Build eleven individual packages and the cumulative Joomla package."""
 from pathlib import Path
 from datetime import date
 import hashlib
@@ -22,7 +22,8 @@ packages = {"lib_operaplus": "operaplus.xml",
             "plg_mediaaction_operaplus_imageoptimizer": "operaplus_imageoptimizer.xml",
             "plg_system_operaplus_imagefeedback": "operaplus_imagefeedback.xml",
             "plg_editorsxtd_operaplus_gallery": "operaplus_gallery.xml",
-            "plg_content_operaplus_gallery": "operaplus_gallery.xml"}
+            "plg_content_operaplus_gallery": "operaplus_gallery.xml",
+            "plg_system_operaplus_sitemap": "operaplus_sitemap.xml"}
 for name, manifest in packages.items():
     folder = ROOT / name
     tree = ET.parse(folder / manifest).getroot()

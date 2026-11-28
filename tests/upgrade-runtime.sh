@@ -25,15 +25,31 @@ article="$(db "SELECT id FROM ci_content WHERE title='CI Atlas field test'")"
 before="$(db "SELECT field_id,item_id,value FROM ci_fields_values WHERE item_id='$article' ORDER BY field_id,value")"
 test -n "$before"
 settings="$(db "SELECT params FROM ci_modules WHERE id=$module")"
+# Adopt the previously standalone sitemap without losing its state or settings.
+standalone="$(mktemp -d)"
+git archive 6ec2028ac67101a021b68d3dd74a4a5ceb47267e:plg_system_operaplus_sitemap | tar -x -C "$standalone"
+(cd "$standalone" && zip -qr "$RUNNER_TEMP/sitemap-1.0.0.zip" .)
+(cd "$JOOMLA_ROOT" && php cli/joomla.php extension:install --no-interaction --path="$RUNNER_TEMP/sitemap-1.0.0.zip")
+rm -rf "$standalone"
+test "$(db "SELECT JSON_UNQUOTE(JSON_EXTRACT(manifest_cache,'$.version')) FROM ci_extensions WHERE type='plugin' AND folder='system' AND element='operaplus_sitemap'")" = 1.0.0
+db "UPDATE ci_extensions SET enabled=1, params='{\"origin\":\"https://opera.plus\",\"external\":\"/atlas/sitemap.xml\",\"exclude_menu\":\"77\"}' WHERE type='plugin' AND folder='system' AND element='operaplus_sitemap'"
+sitemap_id="$(db "SELECT extension_id FROM ci_extensions WHERE type='plugin' AND folder='system' AND element='operaplus_sitemap'")"
+sitemap_settings="$(db "SELECT params FROM ci_extensions WHERE extension_id=$sitemap_id")"
 (cd "$JOOMLA_ROOT" && php cli/joomla.php extension:install --no-interaction --path="$root/dist/pkg_operaplus-$version.zip")
+test "$(db "SELECT extension_id FROM ci_extensions WHERE type='plugin' AND folder='system' AND element='operaplus_sitemap'")" = "$sitemap_id"
+test "$(db "SELECT params FROM ci_extensions WHERE extension_id=$sitemap_id")" = "$sitemap_settings"
+test "$(db "SELECT enabled FROM ci_extensions WHERE extension_id=$sitemap_id")" = 1
+test "$(db "SELECT package_id FROM ci_extensions WHERE extension_id=$sitemap_id")" = "$package"
+# Keep unrelated editor runtime tests isolated from this opt-in plugin.
+db "UPDATE ci_extensions SET enabled=0 WHERE extension_id=$sitemap_id"
 test "$(db "SELECT extension_id FROM ci_extensions WHERE element='pkg_operaplus' AND type='package'")" = "$package"
-test "$(db "SELECT COUNT(*) FROM ci_extensions WHERE package_id=$package AND JSON_UNQUOTE(JSON_EXTRACT(manifest_cache,'$.version'))='$version'")" = 10
+test "$(db "SELECT COUNT(*) FROM ci_extensions WHERE package_id=$package AND JSON_UNQUOTE(JSON_EXTRACT(manifest_cache,'$.version'))='$version'")" = 11
 test "$(db "SELECT field_id,item_id,value FROM ci_fields_values WHERE item_id='$article' ORDER BY field_id,value")" = "$before"
 test "$(db "SELECT params FROM ci_modules WHERE id=$module")" = "$settings"
 test "$(db "SELECT COUNT(*) FROM ci_modules_menu WHERE moduleid=$module AND menuid=0")" = 1
 test "$(db "SELECT COUNT(*) FROM ci_extensions WHERE enabled=1 AND element IN ('operaplusatlas','operaplus_templates') AND type='plugin'")" = 2
 # Check exact installed provider bytes, not only the database manifest version.
-for mapping in 'fields/operaplusatlas:plg_fields_operaplusatlas' 'editors-xtd/operaplus_templates:plg_editorsxtd_operaplus_templates' 'system/operaplus_masthead:plg_system_operaplus_masthead' 'media-action/operaplus_imageoptimizer:plg_mediaaction_operaplus_imageoptimizer' 'system/operaplus_imagefeedback:plg_system_operaplus_imagefeedback' 'editors-xtd/operaplus_gallery:plg_editorsxtd_operaplus_gallery' 'content/operaplus_gallery:plg_content_operaplus_gallery'; do
+for mapping in 'fields/operaplusatlas:plg_fields_operaplusatlas' 'editors-xtd/operaplus_templates:plg_editorsxtd_operaplus_templates' 'system/operaplus_masthead:plg_system_operaplus_masthead' 'media-action/operaplus_imageoptimizer:plg_mediaaction_operaplus_imageoptimizer' 'system/operaplus_imagefeedback:plg_system_operaplus_imagefeedback' 'editors-xtd/operaplus_gallery:plg_editorsxtd_operaplus_gallery' 'content/operaplus_gallery:plg_content_operaplus_gallery' 'system/operaplus_sitemap:plg_system_operaplus_sitemap'; do
   installed="$JOOMLA_ROOT/plugins/${mapping%%:*}/services/provider.php"
   expected="$root/${mapping#*:}/services/provider.php"
   cmp "$expected" "$installed"
@@ -45,7 +61,7 @@ php -r '
     define("JPATH_BASE", $argv[1] . "/administrator");
     require JPATH_BASE . "/includes/defines.php";
     $map = require JPATH_CACHE . "/autoload_psr4.php";
-    foreach (["Fields\\Atlas", "EditorsXtd\\Templates", "System\\Masthead", "MediaAction\\ImageOptimizer", "System\\ImageFeedback", "EditorsXtd\\Gallery", "Content\\Gallery"] as $suffix) {
+    foreach (["Fields\\Atlas", "EditorsXtd\\Templates", "System\\Masthead", "MediaAction\\ImageOptimizer", "System\\ImageFeedback", "EditorsXtd\\Gallery", "Content\\Gallery", "System\\Sitemap"] as $suffix) {
         $key = "OperaPlus\\Plugin\\" . $suffix . "\\";
         if (!isset($map[$key]) || !is_dir($map[$key][0])) {
             throw new RuntimeException("Missing installed namespace: " . $key);

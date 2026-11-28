@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension type="module" client="site" method="upgrade">
-  <name>MOD_OPERAPLUS_CTA</name><version>2.0.1</version>
+  <name>MOD_OPERAPLUS_CTA</name><version>2.1.0</version>
   <creationDate>2026-11-28</creationDate><author>Jecko Development</author><license>GNU General Public License version 2 or later</license><description>MOD_OPERAPLUS_CTA_XML_DESCRIPTION</description>
   <files><filename module="mod_operaplus_cta">mod_operaplus_cta.php</filename><folder>src</folder><folder>tmpl</folder></files>
   <media destination="mod_operaplus_cta" folder="media"><folder>css</folder></media>

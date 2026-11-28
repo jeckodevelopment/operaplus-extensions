@@ -2,6 +2,10 @@
 
 Joomla 6 extensions for the Opera+ magazine. Development milestone 2.0.0 (unreleased): see [roadmap](https://github.com/jeckodevelopment/operaplus-extensions/issues/1). Stable release publication is tracked on the [Releases page](https://github.com/jeckodevelopment/operaplus-extensions/releases).
 
+## 2.1.0 — development
+
+- Opera+ Sitemap: opt-in public Joomla sitemap and external sitemap index, included in the cumulative package. See [configuration and acceptance](docs/SITEMAP.md).
+
 ## 2.0.0 — development
 
 - Opera+ Gallery: storage, editor upload, revision-safe editing and responsive frontend lightbox; opt-in, pending acceptance. See [gallery plan](docs/GALLERY.md).
@@ -15,4 +19,4 @@ Joomla 6 extensions for the Opera+ magazine. Development milestone 2.0.0 (unrele
 
 - Image Optimizer: optional Media Manager upload conversion for JPEG/PNG, WebP quality 90, maximum long edge 1920 px. Native Media Manager displays the outcome and reason for any skipped conversion. [Configuration and limitations](docs/IMAGE_OPTIMIZER.md).
 
-CI builds ten individual ZIP packages and one cumulative package. See [release and updates](docs/RELEASE.md). Use the cumulative package from the Releases page for normal installations. CI artifacts are for development testing.
+CI builds eleven individual ZIP packages and one cumulative package. See [release and updates](docs/RELEASE.md). Use the cumulative package from the Releases page for normal installations. CI artifacts are for development testing.
