@@ -24,6 +24,7 @@ jobs:
           php tests/index.php
           php tests/cta.php
           php tests/image-optimizer.php
+          php tests/gallery-store.php
           node tests/editor-templates.mjs
       - name: Validate manifests and build ZIPs
         run: python3 tools/package.py
