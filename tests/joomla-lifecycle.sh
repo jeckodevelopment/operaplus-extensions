@@ -25,6 +25,8 @@ for i in "${!packages[@]}"; do
 done
 test -f "$JOOMLA_ROOT/libraries/operaplus/src/Index.php"
 test -f "$JOOMLA_ROOT/libraries/operaplus/src/GalleryStore.php"
+test -f "$JOOMLA_ROOT/libraries/operaplus/cli/gallery-audit.php"
+(cd "$JOOMLA_ROOT" && php libraries/operaplus/cli/gallery-audit.php)
 test -f "$JOOMLA_ROOT/plugins/content/operaplus_gallery/services/provider.php"
 test -f "$JOOMLA_ROOT/media/plg_content_operaplus_gallery/js/lightbox.js"
 test -f "$JOOMLA_ROOT/plugins/editors-xtd/operaplus_gallery/services/provider.php"

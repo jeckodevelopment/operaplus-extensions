@@ -168,7 +168,7 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
             throw new \RuntimeException(Text::_('PLG_OPGALLERY_INVALID_UPLOAD'));
         }
         try {
-            return $store->add($article, $gallery, $bytes, $ext, max(50, min(100, (int) $this->params->get('quality', 85))));
+            return $store->add($article, $gallery, $bytes, $ext, max(50, min(100, (int) $this->params->get('quality', 85))), true);
         } catch (\Throwable $e) {
             // Only return known reason codes; filesystem paths and traces stay private.
             if (preg_match('/^(?:Image|Thumbnail) conversion failed: ([a-z-]+)$/D', $e->getMessage(), $matches)) {
@@ -190,7 +190,7 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         $this->assertArticle($article);
         $action = $post->getCmd('action');
         $gallery = $post->getString('gallery');
-        $store = $this->store();
+        try { $store = $this->store(); } catch (\Throwable $e) { throw new \RuntimeException(Text::_('PLG_OPGALLERY_ERROR')); }
         $session = $app->getSession();
         $staged = $session->get('operaplus.gallery.staged', []);
         if (!is_array($staged)) { $staged = []; }
@@ -200,8 +200,9 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
                 if (count($staged) >= 12) {
                     throw new \RuntimeException(Text::_('PLG_OPGALLERY_LIMIT'));
                 }
-                $gallery = $action === 'fork' ? $store->fork($article, $gallery) : $store->create($article);
-                $staged[$gallery] = ['article' => $article, 'expires' => time() + 86400];
+                $expires = time() + Store::STAGE_TTL;
+                $gallery = $action === 'fork' ? $store->fork($article, $gallery, $expires) : $store->create($article, $expires);
+                $staged[$gallery] = ['article' => $article, 'expires' => $expires];
                 $session->set('operaplus.gallery.staged', $staged);
                 $event->addResult(['gallery' => $gallery] + $store->read($article, $gallery));
                 return;
@@ -214,7 +215,7 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
                 throw new \RuntimeException(Text::_('PLG_OPGALLERY_DENIED'));
             }
             if ($action === 'discard') {
-                $store->discard($article, $gallery);
+                $store->discard($article, $gallery, true);
                 unset($staged[$gallery]);
                 $session->set('operaplus.gallery.staged', $staged);
                 $event->addResult(['discarded' => true]);
@@ -226,7 +227,8 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
                 return;
             }
             if ($action === 'read') {
-                $event->addResult($store->read($article, $gallery));
+                $event->addResult((int) ($staged[$gallery]['article'] ?? 0) === $article
+                    ? $store->read($article, $gallery) : $store->readCommitted($article, $gallery));
                 return;
             }
             if ($action === 'save') {
@@ -239,7 +241,7 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
                     || !is_array($metadata['expected'] ?? null) || !is_string($metadata['credit'] ?? null)) {
                     throw new \InvalidArgumentException(Text::_('PLG_OPGALLERY_EMPTY'));
                 }
-                $doc = $store->update($article, $gallery, $metadata['images'], $metadata['credit'], $metadata['expected']);
+                $doc = $store->update($article, $gallery, $metadata['images'], $metadata['credit'], $metadata['expected'], true);
                 unset($staged[$gallery]);
                 $session->set('operaplus.gallery.staged', $staged);
                 $event->addResult($doc);

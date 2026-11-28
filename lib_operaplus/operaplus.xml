@@ -3,6 +3,6 @@
   <name>lib_operaplus</name><libraryname>operaplus</libraryname>
   <version>2.0.0</version>
   <creationDate>2026-11-28</creationDate><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
-  <description>Shared Opera+ Atlas index client</description>
-  <files><folder>src</folder></files>
+  <description>Shared Opera+ Atlas and gallery services</description>
+  <files><folder>src</folder><folder>cli</folder></files>
 </extension>
