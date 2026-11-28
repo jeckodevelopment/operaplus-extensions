@@ -16,7 +16,7 @@ Storage, editor and frontend renderer implemented. Both gallery plugins are opt-
 3. Trascinare o selezionare JPG, PNG e WebP. Verificare l'esito per ogni file; ritentare solo i file falliti. Massimo 60 foto, 20 MiB ciascuna o il limite Media/PHP inferiore (mostrato nel popup, con margine per il POST multipart); massimo 12 megapixel per sorgente. Nomi ordinari con lettere, cifre, spazi, trattini e underscore.
 4. Riordinare con drag and drop o pulsanti, inserire alt, didascalie e crediti; scegliere 2–4 colonne e premere Inserisci galleria.
 5. Per modificare una galleria già inserita, riaprire il pulsante e scegliere la galleria esistente. Le modifiche creano una nuova revisione; applicare e salvare l'articolo.
-6. Verificare anteprime, lightbox, frecce, ESC, swipe, desktop e smartphone. Senza JavaScript, i link aprono la foto grande.
+6. Le anteprime pubbliche sono ritagliate visivamente in riquadri uniformi 4:3; ogni riga è centrata. Il lightbox conserva la fotografia intera. Verificare anteprime, lightbox, frecce, ESC, swipe, desktop e smartphone. Senza JavaScript, i link aprono la foto grande.
 
 Le immagini sono file pubblici standard Joomla: non caricare materiale confidenziale o soggetto a embargo. Le versioni storiche devono essere conservate finché non esiste un inventario affidabile delle referenze. Non eliminare cartelle a mano senza backup.
 
@@ -40,7 +40,8 @@ Il comando ricontrolla lo stato sotto lock prima di eliminare. Non elimina revis
 
 ## Esiti collaudo manuale
 
-- 2026-11-28: GAL-T01 e GAL-T02 superati. Feedback: eliminare lo sfondo grigio delle anteprime, visualizzare il limite di peso per singola fotografia. Correzioni implementate, da ricollaudare.
+- 2026-11-28: GAL-T01 e GAL-T02 superati. Feedback: eliminare lo sfondo grigio delle anteprime, visualizzare il limite di peso per singola fotografia. Correzioni verificate con esito OK sulla 2.0.0.
+- 2026-11-28: GAL-T03 e GAL-T04 superati. Feedback: anteprime con altezza uniforme e gallerie centrate orizzontalmente. Correzione 2.0.1 in verifica: riquadri 4:3, ritaglio visivo centrato (senza modificare i file), righe incomplete centrate.
 
 ## Collaudo manuale finale (staging Opera+)
 

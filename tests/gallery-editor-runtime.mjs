@@ -7,6 +7,7 @@ const browser = await chromium.launch();
 const page = await browser.newPage({viewport:{width:1440,height:1000}});
 const base = 'http://127.0.0.1:8080/administrator/index.php';
 const png=execFileSync('php',['-r','$i=imagecreatetruecolor(2000,1000);imagefilledrectangle($i,0,0,2000,1000,imagecolorallocate($i,80,30,50));imagepng($i);']);
+const portrait=execFileSync('php',['-r','$i=imagecreatetruecolor(800,1600);imagefilledrectangle($i,0,0,800,1600,imagecolorallocate($i,30,80,50));imagepng($i);']);
 const open=async()=>{
   await page.waitForFunction(()=>window.tinymce?.get('jform_articletext')?.initialized);
   await page.evaluate(()=>tinymce.get('jform_articletext').getContainer().setAttribute('data-ci-gallery-editor','1'));
@@ -51,7 +52,7 @@ try {
     {name:'oversized.png',mimeType:'image/png',buffer:Buffer.alloc(20*1024*1024+1)},
     {name:'first.png',mimeType:'image/png',buffer:png},
     {name:'broken.png',mimeType:'image/png',buffer:Buffer.from('not an image')},
-    {name:'second.png',mimeType:'image/png',buffer:png},
+    {name:'second.png',mimeType:'image/png',buffer:portrait},
   ]);
   await dialog.getByText('second.png — WebP ready',{exact:true}).waitFor({timeout:60000});
   await dialog.getByText('broken.png — Upload failed',{exact:false}).waitFor();
@@ -133,8 +134,25 @@ try {
   await guest.keyboard.press('Escape');
   await lightbox.waitFor({state:'hidden'});
   assert.equal(await first.evaluate(el=>document.activeElement===el),true);
+  async function checkLayout(){
+    const result=await grid.locator('.op-photo-grid').evaluate(el=>{
+      const bounds=el.getBoundingClientRect();
+      const links=[...el.querySelectorAll('.op-photo-link')].map(link=>{
+        const box=link.getBoundingClientRect(), img=link.querySelector('img'), ib=img.getBoundingClientRect();
+        return {x:box.x,right:box.right,y:box.y,width:box.width,height:box.height,imgHeight:ib.height,imgWidth:ib.width,fit:getComputedStyle(img).objectFit};
+      });
+      return {left:bounds.left,right:bounds.right,links};
+    });
+    const [a,b]=result.links;
+    assert.ok(Math.abs(a.height-b.height)<1 && Math.abs(a.width-b.width)<1,'Unequal thumbnail boxes');
+    assert.ok(Math.abs(a.height-a.width*0.75)<1,'Expected 4:3 frame');
+    assert.ok(Math.abs(a.y-b.y)<1,'Expected same row');
+    assert.ok(Math.abs(a.x-result.left-(result.right-b.right))<1,'Gallery row not centered');
+    for(const x of result.links){assert.equal(x.fit,'cover');assert.ok(Math.abs(x.imgHeight-x.height)<1&&Math.abs(x.imgWidth-x.width)<1,'Photo does not fill thumbnail');}
+  }
+  await checkLayout();
   await guest.setViewportSize({width:390,height:844});
-  assert.equal(await grid.locator('.op-photo-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),2);
+  await checkLayout();
   await guest.goto('http://127.0.0.1:8080/index.php');
   assert.equal(await guest.locator('script[src*="plg_content_operaplus_gallery"]').count(),0,'Gallery assets loaded on unrelated page');
   await guest.close();
