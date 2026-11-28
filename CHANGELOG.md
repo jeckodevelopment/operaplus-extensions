@@ -1,6 +1,9 @@
 # Changelog
 
-## 2.0.0 — development (unreleased)
+## 2.0.1 — development (unreleased)
+- Uniform 4:3 thumbnail frames, centered crop and centered gallery rows including incomplete final rows. Preserve existing files and full lightbox images. Record GAL-T03/T04 and both earlier feedback checks as passed.
+
+## 2.0.0 — 2026-11-28
 - Editorial acceptance: transparent thumbnail backgrounds in editor and public gallery, and effective per-photo upload limit shown in the dialog; consistent client/server enforcement.
 - Ensure Opera+ plugin providers load installed classes even when Joomla's generated namespace map is temporarily stale following an update; regression fixture covers the upgraded runtime.
 - Opera+ Gallery: WebP variants, per-article storage, editor button with multiple uploads, reorder, credits and captions. Responsive frontend grid and accessible lightbox; copy-on-write editing, explicit cancellation and acceptance tests. Persistent staging expiry, committed-only rendering, safe offline stage cleanup and editor acceptance checklist.
