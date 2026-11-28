@@ -13,6 +13,8 @@ defined('_JEXEC') or die;
 final class Store
 {
     public const MAX_IMAGES = 60;
+    public const STAGE_TTL = 86400;
+    public const PURGE_GRACE = 86400;
     private string $root;
     private \Closure $convert;
 
@@ -67,6 +69,9 @@ final class Store
             || !is_array($doc['images'] ?? null) || !array_is_list($doc['images'])
             || count($doc['images']) > self::MAX_IMAGES || !is_string($doc['credit'] ?? null)) {
             throw new \RuntimeException('Invalid gallery metadata');
+        }
+        if (array_key_exists('stage_until', $doc) && (!is_int($doc['stage_until']) || $doc['stage_until'] < 1)) {
+            throw new \RuntimeException('Invalid gallery stage');
         }
         $seen = [];
         foreach ($doc['images'] as $photo) {
@@ -123,28 +128,32 @@ final class Store
         }
     }
 
-    public function create(int $article): string
+    public function create(int $article, ?int $stageUntil = null): string
     {
         $gallery = bin2hex(random_bytes(12));
         $folder = $this->folder($article, $gallery, true);
-        $this->locked($folder, function () use ($folder): void {
+        $this->locked($folder, function () use ($folder, $stageUntil): void {
             if (file_exists($folder . '/gallery.json')) {
                 throw new \RuntimeException('Gallery already exists');
             }
-            $this->writeMetadata($folder, ['schema' => 1, 'credit' => '', 'images' => []]);
+            $doc = ['schema' => 1, 'credit' => '', 'images' => []];
+            if ($stageUntil !== null) { $doc['stage_until'] = $stageUntil; }
+            $this->writeMetadata($folder, $doc);
         });
         return $gallery;
     }
 
     /** Copy a gallery for editing without mutating a published article revision. */
-    public function fork(int $article, string $source): string
+    public function fork(int $article, string $source, ?int $stageUntil = null): string
     {
         $origin = $this->folder($article, $source);
-        $new = $this->create($article);
+        $new = $this->create($article, $stageUntil);
         $target = $this->folder($article, $new);
         try {
-            $this->locked($origin, function () use ($origin, $target): void {
+            $this->locked($origin, function () use ($origin, $target, $stageUntil): void {
                 $doc = $this->metadata($origin);
+                if (isset($doc['stage_until'])) { throw new \RuntimeException('Cannot fork an unfinished stage'); }
+                if ($stageUntil !== null) { $doc['stage_until'] = $stageUntil; }
                 foreach ($doc['images'] as $photo) {
                     foreach (['.webp', '-thumb.webp'] as $suffix) {
                         $name = $photo['id'] . $suffix;
@@ -169,10 +178,16 @@ final class Store
     }
 
     /** Only call for an authenticated, session-owned, uncommitted gallery. */
-    public function discard(int $article, string $gallery): void
+    public function discard(int $article, string $gallery, bool $requireStage = false, ?int $expiredBefore = null): void
     {
         $folder = $this->folder($article, $gallery);
-        $this->locked($folder, function () use ($folder): void {
+        $this->locked($folder, function () use ($folder, $requireStage, $expiredBefore): void {
+            if ($requireStage || $expiredBefore !== null) {
+                $doc = $this->metadata($folder);
+                if (!isset($doc['stage_until']) || ($expiredBefore !== null && $doc['stage_until'] > $expiredBefore)) {
+                    throw new \RuntimeException('Gallery is not an eligible unfinished stage');
+                }
+            }
             foreach (new \FilesystemIterator($folder) as $entry) {
                 if ($entry->getFilename() === '.gallery.lock') { continue; }
                 if ($entry->isLink() || !$entry->isFile()
@@ -196,6 +211,62 @@ final class Store
         return $this->metadata($this->folder($article, $gallery));
     }
 
+    /** Only committed/legacy revisions can be rendered by a content plugin. */
+    public function readCommitted(int $article, string $gallery): array
+    {
+        $doc = $this->read($article, $gallery);
+        if (isset($doc['stage_until'])) {
+            throw new \RuntimeException('Gallery has not been inserted');
+        }
+        return $doc;
+    }
+
+    private static function assertStage(array $doc): void
+    {
+        if (!isset($doc['stage_until']) || $doc['stage_until'] < time()) {
+            throw new \RuntimeException('Gallery stage expired or already committed');
+        }
+    }
+
+    /**
+     * Read-only filesystem inventory. Never infer that a committed gallery is
+     * orphaned: article histories, backups or external links may reference it.
+     * The caller must use an offline maintenance window for any purge.
+     */
+    public function inventory(?int $now = null): iterable
+    {
+        $now ??= time();
+        $root = $this->root . '/galleries';
+        if (!is_dir($root) || is_link($root)) { return; }
+        foreach (new \FilesystemIterator($root) as $article) {
+            if ($article->isLink() || !$article->isDir()
+                || !preg_match('/^article-([1-9][0-9]{0,9})$/D', $article->getFilename(), $a)) { continue; }
+            $articleId = (int) $a[1];
+            foreach (new \FilesystemIterator($article->getPathname()) as $gallery) {
+                if ($gallery->isLink() || !$gallery->isDir()
+                    || !preg_match('/^gallery-([a-f0-9]{24})$/D', $gallery->getFilename(), $g)) { continue; }
+                $row = ['article' => $articleId, 'gallery' => $g[1], 'status' => 'review', 'photos' => null, 'bytes' => null];
+                try {
+                    $folder = $this->folder($articleId, $g[1]);
+                    $doc = $this->metadata($folder);
+                    $row['status'] = !isset($doc['stage_until']) ? 'retained'
+                        : ($doc['stage_until'] <= $now - self::PURGE_GRACE ? 'expired-stage' : 'stage');
+                    $row['photos'] = count($doc['images']);
+                    $bytes = 0;
+                    foreach (new \FilesystemIterator($folder) as $file) {
+                        if ($file->isLink() || !$file->isFile()
+                            || !preg_match('/^(?:[a-f0-9]{24}(?:-thumb)?\.webp|gallery\.json|\.gallery\.lock|\.metadata-[a-f0-9]{24})$/D', $file->getFilename())) {
+                            throw new \RuntimeException('Unexpected gallery file');
+                        }
+                        $bytes += $file->getSize();
+                    }
+                    $row['bytes'] = $bytes;
+                } catch (\Throwable $e) { $row['status'] = 'review'; }
+                yield $row;
+            }
+        }
+    }
+
     private static function plainText(mixed $text, int $max = 1000): string
     {
         if (!is_string($text) || strlen($text) > $max || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $text)
@@ -205,7 +276,7 @@ final class Store
         return trim($text);
     }
 
-    public function add(int $article, string $gallery, string $data, string $extension, int $quality = 85): array
+    public function add(int $article, string $gallery, string $data, string $extension, int $quality = 85, bool $requireStage = false): array
     {
         if (strlen($data) > 20 * 1024 * 1024 || !in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
             throw new \InvalidArgumentException('Invalid gallery image');
@@ -227,8 +298,9 @@ final class Store
                 throw new \RuntimeException('Invalid conversion result');
             }
         }
-        return $this->locked($folder, function () use ($folder, $large, $thumb): array {
+        return $this->locked($folder, function () use ($folder, $large, $thumb, $requireStage): array {
             $doc = $this->metadata($folder);
+            if ($requireStage) { self::assertStage($doc); }
             if (count($doc['images']) >= self::MAX_IMAGES) {
                 throw new \RuntimeException('Gallery image limit reached');
             }
@@ -264,14 +336,15 @@ final class Store
      * Omitted files are retained to avoid breaking another article revision.
      * New uploads must be included or the caller should refresh before saving.
      */
-    public function update(int $article, string $gallery, array $images, string $credit, array $expectedIds): array
+    public function update(int $article, string $gallery, array $images, string $credit, array $expectedIds, bool $commitStage = false): array
     {
         if (!array_is_list($images) || count($images) > self::MAX_IMAGES || !array_is_list($expectedIds)) {
             throw new \InvalidArgumentException('Invalid gallery update');
         }
         $folder = $this->folder($article, $gallery);
-        return $this->locked($folder, function () use ($folder, $images, $credit, $expectedIds): array {
+        return $this->locked($folder, function () use ($folder, $images, $credit, $expectedIds, $commitStage): array {
             $doc = $this->metadata($folder);
+            if ($commitStage) { self::assertStage($doc); }
             $current = array_column($doc['images'], 'id');
             if ($current !== $expectedIds) {
                 throw new \RuntimeException('Gallery changed; reload before editing');
@@ -289,7 +362,26 @@ final class Store
             }
             $doc['images'] = $updated;
             $doc['credit'] = self::plainText($credit);
+            if ($commitStage) {
+                // Only remove photos omitted from this private editing copy.
+                // The previous committed revision and its files are untouched.
+                foreach (array_keys($allowed) as $removed) {
+                    foreach (['.webp', '-thumb.webp'] as $suffix) {
+                        $file = $folder . '/' . $removed . $suffix;
+                        if (is_link($file)) { throw new \RuntimeException('Invalid staged photo'); }
+                    }
+                }
+                unset($doc['stage_until']);
+            }
             $this->writeMetadata($folder, $doc);
+            if ($commitStage) {
+                foreach (array_keys($allowed) as $removed) {
+                    foreach (['.webp', '-thumb.webp'] as $suffix) {
+                        $file = $folder . '/' . $removed . $suffix;
+                        if (is_file($file) && !is_link($file)) { @unlink($file); }
+                    }
+                }
+            }
             return $doc;
         });
     }

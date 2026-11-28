@@ -3,11 +3,11 @@
 Storage, editor and frontend renderer implemented. Both gallery plugins are opt-in. No stable release yet.
 
 - GAL-02 foundation: shared optimizer gallery mode always emits static WebP (including smaller originals and WebP inputs), 1920 px full and 480 px thumbnail, quality 85 by default. Native Media Manager policy unchanged.
-- GAL-03 foundation: local per-article and per-gallery random identifiers, atomic metadata, bounded photos, exclusive writes, reorder, alt text, captions and credits. Removed photos remain on disk until a safe retention policy is implemented.
-- GAL-01/GAL-02: administrator editor button, multipart uploads via com_ajax, existing article and checkout checks, core.edit or owner core.edit.own, core.create on com_media, CSRF, Joomla MediaHelper policy, image MIME and size checks, per-file feedback, 2–4 columns. For new articles explicitly save as unpublished first; no automatic publication or save. Existing photo folders and metadata follow public Media Manager semantics: not confidential. Per-user quotas, orphan cleanup and private media policy remain to be defined.
-- GAL-03: choose an existing gallery from the editor dialog to edit a separate revision; old gallery remains unchanged until native article save. Staged writes are restricted to the originating authenticated session (24-hour window, max 12 active stages); explicit cancellation discards the stage. Abandoned browser sessions and old published revisions are deliberately retained, pending a safe administrator cleanup workflow.
+- GAL-03 foundation: local per-article and per-gallery random identifiers, atomic metadata, bounded photos, exclusive writes, reorder, alt text, captions and credits. Omitted photos are removed only from the private editing copy when committed; previous revisions are kept.
+- GAL-01/GAL-02: administrator editor button, multipart uploads via com_ajax, existing article and checkout checks, core.edit or owner core.edit.own, core.create on com_media, CSRF, Joomla MediaHelper policy, image MIME and size checks, per-file feedback, 2–4 columns. For new articles explicitly save as unpublished first; no automatic publication or save. Existing photo folders and metadata follow public Media Manager semantics: not confidential. Session limits: 12 active galleries, 60 photographs per gallery, bounded conversion. Storage monitoring and confidential media are site policies.
+- GAL-03: choose an existing gallery from the editor dialog to edit a separate revision; old gallery remains unchanged until native article save. Staged writes are restricted to the originating authenticated session (24-hour window, max 12 active stages); explicit cancellation discards the stage. Unfinished galleries have a persisted expiration marker; they cannot render or be forked. The maintenance CLI reports expired stages and can purge only those, never committed or legacy galleries.
 - GAL-04/GAL-05: article-only shortcode rendering bound to the current article, escaped metadata, responsive grid, native dialog lightbox with keyboard/touch navigation, fallback links, conditional assets, credits and captions.
-- GAL-06/GAL-07 pending: real Joomla browser/runtime and installer tests, editor guide, preview package and final release approval. Do not publish a stable release or overwrite the existing 1.1.1 release.
+- GAL-06/GAL-07: native Joomla browser/runtime, installer and storage tests, editor guide, maintenance CLI and manual acceptance checklist. Stable release requires final approval.
 
 ## Guida per la redazione
 
@@ -19,6 +19,36 @@ Storage, editor and frontend renderer implemented. Both gallery plugins are opt-
 6. Verificare anteprime, lightbox, frecce, ESC, swipe, desktop e smartphone. Senza JavaScript, i link aprono la foto grande.
 
 Le immagini sono file pubblici standard Joomla: non caricare materiale confidenziale o soggetto a embargo. Le versioni storiche devono essere conservate finché non esiste un inventario affidabile delle referenze. Non eliminare cartelle a mano senza backup.
+
+## Manutenzione (amministratore)
+
+Dalla root di Joomla, con accesso shell:
+
+```sh
+php libraries/operaplus/cli/gallery-audit.php
+```
+
+Il comando è solo di lettura e restituisce JSON Lines con articolo, galleria, stato, numero foto e dimensione, più un riepilogo su stderr. `retained` indica una revisione già inserita o preesistente, non un orfano accertato. `review` richiede verifica manuale.
+
+Per eliminare soltanto le bozze temporanee scadute da almeno altre 24 ore, fare un backup e arrestare l'accesso HTTP/worker al sito (finestra offline reale; l'opzione non arresta Joomla). Eseguire:
+
+```sh
+php libraries/operaplus/cli/gallery-audit.php --purge-expired-stages --offline
+```
+
+Il comando ricontrolla lo stato sotto lock prima di eliminare. Non elimina revisioni inserite, file inattesi o directory simboliche. Non esegue pulizia automatica schedulata. Le revisioni inserite ma non salvate nell'articolo e le gallerie antecedenti al marcatore persistente sono conservate intenzionalmente.
+
+## Collaudo manuale finale (staging Opera+)
+
+- GAL-T01: installazione cumulativa e upgrade da 1.1.1; attivare entrambi i plugin; impostazioni precedenti intatte.
+- GAL-T02: articolo nuovo, pulsante e richiesta salvataggio non pubblicato; riprendere senza perdita del testo.
+- GAL-T03: drag and drop multiplo JPG/PNG/WebP, file invalido e troppo grande, esiti per foto; controllare cartella, WebP, dimensioni, orientamento, trasparenza.
+- GAL-T04: inserire tra due paragrafi, due gallerie distinte, riordinare con mouse e tastiera, alt/didascalie/crediti, colonne 2/3/4; salvare e riaprire.
+- GAL-T05: modificare una galleria pubblicata, aggiungere/rimuovere foto e annullare; verificare che l'originale non cambi fino al salvataggio dell'articolo; ripristinare una versione precedente.
+- GAL-T06: frontend Opera+ Magazine desktop/tablet/mobile, lightbox, swipe, frecce, ESC, focus, link senza JS; nessun asset galleria sulle altre pagine.
+- GAL-T07: utente redattore reale con modifica propria e Media create; negare articolo altrui, checkout, upload senza ACL e CSRF; verifica policy estensioni/MIME.
+- GAL-T08: audit CLI in staging, report non distruttivo, purge offline su fixture scaduta; verificare revisioni inserite preservate.
+- GAL-T09: accessibilità (lettore di schermo, tastiera, contrasto) e prestazioni con 20–60 immagini; nessuna regressione Media Manager e Atlas.
 
 ## Automated foundation checks
 

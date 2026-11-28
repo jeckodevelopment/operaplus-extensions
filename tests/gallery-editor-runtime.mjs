@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 const browser = await chromium.launch();
 const page = await browser.newPage({viewport:{width:1440,height:1000}});
@@ -74,6 +74,19 @@ try {
   const endpoint=base+'?option=com_ajax&group=editors-xtd&plugin=operaplusgallery&format=json';
   const denied=await page.request.post(endpoint,{form:{action:'read',article:String(article),gallery:match[1]}});
   assert.equal((await denied.json()).success,false,'Missing CSRF accepted');
+  const token = await page.evaluate(()=>Joomla.getOptions('csrf.token'));
+  async function api(action,args={}){
+    const res=await page.request.post(endpoint,{form:{[token]:'1',article:String(article),gallery:match[1],action,...args}});
+    return res.json();
+  }
+  assert.equal((await api('read')).success,true);
+  assert.equal((await api('discard')).success,false,'Committed gallery deleted');
+  assert.equal((await api('read',{article:'999999999'})).success,false,'Nonexistent article accepted');
+  const temp=(await api('create')).data[0].gallery;
+  const tempFolder=join(process.env.JOOMLA_ROOT,'images','galleries','article-'+article,'gallery-'+temp);
+  assert.ok(JSON.parse(readFileSync(join(tempFolder,'gallery.json'),'utf8')).stage_until);
+  assert.equal((await api('discard',{gallery:temp})).success,true);
+  assert.equal(existsSync(tempFolder),false);
   await page.getByRole('button',{name:'Save',exact:true}).click();
   await page.waitForLoadState('networkidle');
   await page.reload();
@@ -96,6 +109,7 @@ try {
   db('UPDATE ci_content SET state=1, access=1, publish_up=NULL, publish_down=NULL WHERE id='+article);
   const guest = await browser.newPage({viewport:{width:1440,height:1000}});
   await guest.goto('http://127.0.0.1:8080/index.php?option=com_content&view=article&id='+article);
+  assert.equal(await guest.locator('script[src*="plg_content_operaplus_gallery"]').count(),1);
   const grid=guest.locator('.op-photo-gallery');
   await grid.waitFor();
   assert.equal(await grid.locator('a.op-photo-link').count(),2);
@@ -114,6 +128,8 @@ try {
   assert.equal(await first.evaluate(el=>document.activeElement===el),true);
   await guest.setViewportSize({width:390,height:844});
   assert.equal(await grid.locator('.op-photo-grid').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),2);
+  await guest.goto('http://127.0.0.1:8080/index.php');
+  assert.equal(await guest.locator('script[src*="plg_content_operaplus_gallery"]').count(),0,'Gallery assets loaded on unrelated page');
   await guest.close();
   console.log('Gallery editor and frontend: draft guard, real uploads, failure feedback, WebP files, reorder, shortcode, credits and CSRF passed.');
 } catch(e){

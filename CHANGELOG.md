@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2.0.0 — development (unreleased)
-- Opera+ Gallery: WebP variants, per-article storage, editor button with multiple uploads, reorder, credits and captions. Responsive frontend grid and accessible lightbox; copy-on-write editing, explicit cancellation and acceptance tests.
+- Opera+ Gallery: WebP variants, per-article storage, editor button with multiple uploads, reorder, credits and captions. Responsive frontend grid and accessible lightbox; copy-on-write editing, explicit cancellation and acceptance tests. Persistent staging expiry, committed-only rendering, safe offline stage cleanup and editor acceptance checklist.
 
 ## 1.1.1 — 2026-11-27
 - Show conversion success, size savings or precise reason for preserving the original after each native Media Manager file upload. A small auto-enabled system companion displays the native response messages only in Media Manager (including its modal); no public page assets. Diagnostic log with reason codes, no file names. Support ordinary accented editorial filenames. Preserve overwrite protection. Fixes diagnostic gap in issue #18; actual staging cause remains to verify.

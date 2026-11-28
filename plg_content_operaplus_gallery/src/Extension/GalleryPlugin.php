@@ -45,12 +45,13 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         foreach (['gallery','open','close','previous','next','credit','counter'] as $key) {
             $labels[$key] = Text::_('PLG_CONTENT_OPGALLERY_' . strtoupper($key));
         }
-        $store = new Store(JPATH_ROOT . '/images', static fn () => null);
+        try { $store = new Store(JPATH_ROOT . '/images', static fn () => null); }
+        catch (\Throwable $e) { $item->text = Renderer::replace($item->text, static fn () => ''); return; }
         $article = (int) $item->id;
         $rendered = false;
         $item->text = Renderer::replace($item->text, static function (string $gallery, int $columns) use ($store, $article, $labels, &$rendered): string {
             try {
-                $doc = $store->read($article, $gallery);
+                $doc = $store->readCommitted($article, $gallery);
                 $html = Renderer::gallery($article, $gallery, $columns, $doc, Uri::root(), $labels);
                 $rendered = $rendered || $html !== '';
                 return $html;
