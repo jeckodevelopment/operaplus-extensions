@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.0 — development (unreleased)
+
+- Integrate Opera+ Sitemap into the cumulative package and native update feed. Add installer lifecycle and standalone adoption checks; preserve plugin settings and enabled state.
+
 ## 2.0.1 — development (unreleased)
 - Uniform 4:3 thumbnail frames, centered crop and centered gallery rows including incomplete final rows. Preserve existing files and full lightbox images. Record GAL-T03/T04 and both earlier feedback checks as passed.
 

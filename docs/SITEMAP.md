@@ -1,6 +1,6 @@
-# Opera+ Sitemap 1.0.0 — standalone preview
+# Opera+ Sitemap — included in Opera+ Extensions 2.1.0
 
-Install the standalone ZIP from the sitemap CI artifact on staging, enable System – Opera+ Sitemap, set the canonical HTTPS origin and save. Requires root installation, SEF/rewrite and PHP XMLWriter. No core edits or database schema. A static sitemap file or a server rewrite bypassing Joomla must be configured separately.
+Upgrade using the cumulative package (recommended); the individual ZIP remains available for preview testing. The plugin remains opt-in. For fresh installs, enable System – Opera+ Sitemap, set the canonical HTTPS origin and save. Requires root installation, SEF/rewrite and PHP XMLWriter. No core edits or database schema. A static sitemap file or a server rewrite bypassing Joomla must be configured separately.
 
 - /sitemap.xml: index referencing /sitemap-content.xml and configured existing same-site leaf XML sitemaps (Atlas default). Do not add Osservatorio unless verified. If Atlas is itself an index, remove it from the plugin list and submit separately.
 - /sitemap-content.xml: eligible public menus, articles routed via eligible public article/category menu, and menu-backed categories. Other components are opt-in by explicit menu IDs; verify anonymous public access before adding. Exclusions are inherited. No guessed non-SEF routes. Single-language root site scope; multilingual canonical behavior requires separate acceptance.
@@ -17,4 +17,4 @@ Install the standalone ZIP from the sitemap CI artifact on staging, enable Syste
 7. Disable plugin and verify normal site; test reinstall.
 8. Only after acceptance add Sitemap: https://opera.plus/sitemap.xml to robots.txt and submit verified sitemaps in Search Console.
 
-Preview only. Cumulative package and native update feed integration follow acceptance. Remaining limitations: no standalone category routes without menu, no arbitrary custom-component providers, multilingual routing not yet certified, no sitemap sharding.
+The native cumulative package and update feed include the plugin from 2.1.0. Production 1.0.0 standalone installation and URL coverage were confirmed by the site operator on 2026-11-28; robots.txt updated and sitemap submitted to Search Console. Full upgrade acceptance remains subject to CI and production verification. Remaining limitations: no standalone category routes without menu, no arbitrary custom-component providers, multilingual routing not yet certified, no sitemap sharding.
