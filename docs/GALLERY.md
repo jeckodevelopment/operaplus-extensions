@@ -13,7 +13,7 @@ Storage, editor and frontend renderer implemented. Both gallery plugins are opt-
 
 1. In Estensioni > Plugin, abilitare Content - Galleria fotografica Opera+ e Galleria fotografica Opera+ (editor-xtd), dopo il collaudo del pacchetto.
 2. Per un articolo nuovo, salvarlo come Non pubblicato. Aprire il menu Contenuto CMS dell'editor e selezionare Galleria fotografica Opera+.
-3. Trascinare o selezionare JPG, PNG e WebP. Verificare l'esito per ogni file; ritentare solo i file falliti. Massimo 60 foto, 20 MiB ciascuna o il limite Media/PHP inferiore; massimo 12 megapixel per sorgente. Nomi ordinari con lettere, cifre, spazi, trattini e underscore.
+3. Trascinare o selezionare JPG, PNG e WebP. Verificare l'esito per ogni file; ritentare solo i file falliti. Massimo 60 foto, 20 MiB ciascuna o il limite Media/PHP inferiore (mostrato nel popup, con margine per il POST multipart); massimo 12 megapixel per sorgente. Nomi ordinari con lettere, cifre, spazi, trattini e underscore.
 4. Riordinare con drag and drop o pulsanti, inserire alt, didascalie e crediti; scegliere 2–4 colonne e premere Inserisci galleria.
 5. Per modificare una galleria già inserita, riaprire il pulsante e scegliere la galleria esistente. Le modifiche creano una nuova revisione; applicare e salvare l'articolo.
 6. Verificare anteprime, lightbox, frecce, ESC, swipe, desktop e smartphone. Senza JavaScript, i link aprono la foto grande.
@@ -37,6 +37,10 @@ php libraries/operaplus/cli/gallery-audit.php --purge-expired-stages --offline
 ```
 
 Il comando ricontrolla lo stato sotto lock prima di eliminare. Non elimina revisioni inserite, file inattesi o directory simboliche. Non esegue pulizia automatica schedulata. Le revisioni inserite ma non salvate nell'articolo e le gallerie antecedenti al marcatore persistente sono conservate intenzionalmente.
+
+## Esiti collaudo manuale
+
+- 2026-11-28: GAL-T01 e GAL-T02 superati. Feedback: eliminare lo sfondo grigio delle anteprime, visualizzare il limite di peso per singola fotografia. Correzioni implementate, da ricollaudare.
 
 ## Collaudo manuale finale (staging Opera+)
 

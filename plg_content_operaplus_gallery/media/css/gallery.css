@@ -4,8 +4,8 @@
 .op-photo-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .op-photo-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .op-photo-gallery .op-photo{margin:0;min-width:0}
-.op-photo-gallery .op-photo-link{display:block;overflow:hidden;border-radius:.25rem;background:#e8e8e8;aspect-ratio:4/3}
-.op-photo-gallery .op-photo-link img{display:block;width:100%;height:100%;object-fit:cover;margin:0;border:0}
+.op-photo-gallery .op-photo-link{display:block;overflow:hidden;border-radius:.25rem;background:transparent;aspect-ratio:4/3}
+.op-photo-gallery .op-photo-link img{display:block;width:100%;height:100%;object-fit:cover;margin:0;border:0;background:transparent}
 .op-photo-gallery .op-photo-link:focus-visible{outline:3px solid currentColor;outline-offset:3px}
 .op-photo-gallery figcaption{font-size:.85em;line-height:1.35;overflow-wrap:anywhere;margin-top:.35rem}
 .op-photo-caption,.op-photo-credit{display:block}

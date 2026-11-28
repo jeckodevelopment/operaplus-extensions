@@ -25,6 +25,7 @@ jobs:
           php tests/cta.php
           php tests/image-optimizer.php
           php tests/gallery-store.php
+          php tests/gallery-upload-limit.php
           php tests/gallery-renderer.php
           node tests/editor-templates.mjs
       - name: Validate manifests and build ZIPs
