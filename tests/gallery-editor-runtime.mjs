@@ -34,11 +34,14 @@ try {
   await page.locator('#jform_state').evaluate(select=>{
     select.value='0';select.dispatchEvent(new Event('change',{bubbles:true}));
   });
-  await page.evaluate(()=>tinymce.get('jform_articletext').setContent('<p>Existing article text</p>'));
+  await page.waitForFunction(()=>tinymce.get('jform_articletext')?.initialized);
+  await page.evaluate(()=>{const ed=tinymce.get('jform_articletext');ed.setContent('<p>Existing article text</p>');ed.save();});
+  assert.ok((await page.evaluate(()=>tinymce.get('jform_articletext').getContent())).includes('Existing article text'),'Fixture before initial save');
   await page.getByRole('button',{name:'Save',exact:true}).click();
   await page.waitForURL(url=>url.searchParams.get('layout')==='edit'&&Number(url.searchParams.get('id'))>0,{timeout:30000});
   const article=Number(new URL(page.url()).searchParams.get('id'));
   await page.waitForFunction(()=>tinymce.get('jform_articletext')?.initialized);
+  assert.ok((await page.evaluate(()=>tinymce.get('jform_articletext').getContent())).includes('Existing article text'),'Fixture after initial save');
   await page.evaluate(()=>{const ed=tinymce.get('jform_articletext');ed.focus();ed.selection.select(ed.getBody(),true);ed.selection.collapse(false);});
   await open();
   await dialog.locator('input[type=file]').setInputFiles([
@@ -57,7 +60,7 @@ try {
   await dialog.getByRole('button',{name:'Insert gallery',exact:true}).click();
   await dialog.waitFor({state:'hidden'});
   const content=await page.evaluate(()=>tinymce.get('jform_articletext').getContent());
-  assert.ok(content.includes('Existing article text'));
+  assert.ok(content.includes('Existing article text'),content);
   const match=content.match(/\{operaplusgallery id="([a-f0-9]{24})" columns="3"\}/);
   assert.ok(match,content);
   const folder=join(process.env.JOOMLA_ROOT,'images','galleries','article-'+article,'gallery-'+match[1]);

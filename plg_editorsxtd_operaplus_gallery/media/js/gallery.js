@@ -23,6 +23,12 @@ const photoId = id => typeof id === 'string' && /^[a-f0-9]{24}$/.test(id);
 JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) => {
   const l = options.labels;
   if (!l || document.querySelector('.op-gallery-editor[open]')) return;
+  // Capture the actual editor range before the modal takes focus. TinyMCE
+  // versions differ in how an asynchronous editor-button action restores it.
+  const raw = editor.getType?.() === 'tinymce' ? editor.getRawInstance() : null;
+  const bookmark = raw?.selection?.getBookmark(2, true);
+  const selection = editor.getSelection?.() || '';
+  const initial = editor.getValue();
   const dialog = create('dialog', '', 'op-gallery-editor');
   dialog.setAttribute('aria-label', l.title);
   dialog.append(create('h2', l.title));
@@ -188,9 +194,36 @@ JoomlaEditorButton.registerAction('operaplus-insert-gallery', (editor, options) 
       const content=editor.getValue();
       if(originalToken&&!content.includes(originalToken))throw new Error(l.changed);
       await request('save',{metadata:JSON.stringify({images:photos,credit:credit.value,expected})});
-      if(originalToken)editor.setValue(content.split(originalToken).join(token));
-      else editor.replaceSelection('<p>'+token+'</p>');
-      inserted=true;close();
+      inserted=true;
+      close();
+      if(originalToken) {
+        editor.setValue(content.split(originalToken).join(token));
+      } else {
+        const markup='<p>'+token+'</p>';
+        if(raw?.selection && bookmark && content===initial) {
+          try {
+            raw.focus();
+            raw.selection.moveToBookmark(bookmark);
+            raw.selection.collapse(false);
+            raw.undoManager.transact(()=>raw.insertContent(markup));
+            raw.save();
+          } catch(error) {
+            editor.setValue(content+markup);
+          }
+        } else if(selection || content!==initial) {
+          // A selected passage or stale bookmark must never be overwritten.
+          editor.setValue(content+markup);
+        } else {
+          editor.replaceSelection(markup);
+        }
+        // Last-resort guard against editor adapters losing content or selection.
+        // Compare text excluding the newly inserted token, ignoring whitespace.
+        const textOf=html=>{const doc=new DOMParser().parseFromString(html,'text/html');return (doc.body.textContent||'').replace(/\s+/g,'');};
+        const after=editor.getValue();
+        if(!after.includes(gallery) || textOf(after.replace(token,'')).indexOf(textOf(content))===-1) {
+          editor.setValue(content+markup);
+        }
+      }
     }catch(error){status.textContent=error.message;}
     finally{busy=false;controls();}
   }
