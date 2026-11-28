@@ -18,6 +18,7 @@
     <file type="plugin" id="operaplus_imageoptimizer" group="media-action">plg_mediaaction_operaplus_imageoptimizer-2.0.0.zip</file>
     <file type="plugin" id="operaplus_imagefeedback" group="system">plg_system_operaplus_imagefeedback-2.0.0.zip</file>
     <file type="plugin" id="operaplus_gallery" group="editors-xtd">plg_editorsxtd_operaplus_gallery-2.0.0.zip</file>
+    <file type="plugin" id="operaplus_gallery" group="content">plg_content_operaplus_gallery-2.0.0.zip</file>
   </files>
   <updateservers><server type="extension" priority="1" name="Opera+ Extensions stable">https://github.com/jeckodevelopment/operaplus-extensions/releases/latest/download/updates.xml</server></updateservers>
 </extension>

@@ -3,10 +3,10 @@
 set -euo pipefail
 : "${JOOMLA_ROOT:?Set JOOMLA_ROOT to the isolated test installation}"
 test -f "$JOOMLA_ROOT/configuration.php"
-packages=(lib_operaplus plg_fields_operaplusatlas mod_operaplus_atlas mod_operaplus_cta plg_editorsxtd_operaplus_templates plg_system_operaplus_masthead plg_mediaaction_operaplus_imageoptimizer plg_system_operaplus_imagefeedback plg_editorsxtd_operaplus_gallery)
+packages=(lib_operaplus plg_fields_operaplusatlas mod_operaplus_atlas mod_operaplus_cta plg_editorsxtd_operaplus_templates plg_system_operaplus_masthead plg_mediaaction_operaplus_imageoptimizer plg_system_operaplus_imagefeedback plg_editorsxtd_operaplus_gallery plg_content_operaplus_gallery)
 elements=(operaplus operaplusatlas mod_operaplus_atlas mod_operaplus_cta operaplus_templates operaplus_masthead operaplus_imageoptimizer operaplus_imagefeedback operaplus_gallery)
-types=(library plugin module module plugin plugin plugin plugin plugin)
-groups=("" fields "" "" editors-xtd system media-action system editors-xtd)
+types=(library plugin module module plugin plugin plugin plugin plugin plugin)
+groups=("" fields "" "" editors-xtd system media-action system editors-xtd content)
 root="$(pwd)"
 db() { mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "$1"; }
 id_for() { db "SELECT extension_id FROM ci_extensions WHERE element='${elements[$1]}' AND type='${types[$1]}' AND folder='${groups[$1]}'"; }
@@ -25,6 +25,8 @@ for i in "${!packages[@]}"; do
 done
 test -f "$JOOMLA_ROOT/libraries/operaplus/src/Index.php"
 test -f "$JOOMLA_ROOT/libraries/operaplus/src/GalleryStore.php"
+test -f "$JOOMLA_ROOT/plugins/content/operaplus_gallery/services/provider.php"
+test -f "$JOOMLA_ROOT/media/plg_content_operaplus_gallery/js/lightbox.js"
 test -f "$JOOMLA_ROOT/plugins/editors-xtd/operaplus_gallery/services/provider.php"
 test -f "$JOOMLA_ROOT/media/plg_editors-xtd_operaplus_gallery/js/gallery.js"
 test -f "$JOOMLA_ROOT/modules/mod_operaplus_atlas/mod_operaplus_atlas.php"
@@ -53,7 +55,7 @@ for ((i=${#packages[@]}-1;i>=0;i--)); do
   (cd "$JOOMLA_ROOT" && php cli/joomla.php extension:remove "$id" --no-interaction)
   test -z "$(id_for "$i")"
 done
-echo "All nine extensions installed, reinstalled and removed using Joomla's native installer."
+echo "All ten extensions installed, reinstalled and removed using Joomla's native installer."
 
 # Test the cumulative package separately from the individual extensions.
 version="$(cat VERSION)"
@@ -69,4 +71,4 @@ done
 test -f "$JOOMLA_ROOT/media/mod_operaplus_atlas/css/atlas.css"
 (cd "$JOOMLA_ROOT" && php cli/joomla.php extension:remove "$pkg_id" --no-interaction)
 for i in "${!packages[@]}"; do test -z "$(id_for "$i")"; done
-echo "Cumulative package installed with all nine children and removed cleanly."
+echo "Cumulative package installed with all ten children and removed cleanly."

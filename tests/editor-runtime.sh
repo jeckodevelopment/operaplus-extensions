@@ -76,6 +76,6 @@ node tests/masthead-runtime.mjs
 mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=1 WHERE type='plugin' AND folder='media-action' AND element='operaplus_imageoptimizer';"
 node tests/image-optimizer-runtime.mjs
 
-# Real gallery editor integration (opt-in until frontend renderer is available).
-mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=1 WHERE type='plugin' AND folder='editors-xtd' AND element='operaplus_gallery';"
+# Real gallery editor integration (opt-in for the isolated CI runtime).
+mysql --protocol=TCP -h 127.0.0.1 -u joomla_test -N -B joomla_test -e "UPDATE ci_extensions SET enabled=1 WHERE type='plugin' AND folder IN ('editors-xtd','content') AND element='operaplus_gallery';"
 node tests/gallery-editor-runtime.mjs

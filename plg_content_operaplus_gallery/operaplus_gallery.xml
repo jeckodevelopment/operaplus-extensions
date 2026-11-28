@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension type="plugin" group="content" method="upgrade">
+  <name>PLG_CONTENT_OPGALLERY_NAME</name><version>2.0.0</version>
+  <creationDate>2026-11-28</creationDate><author>Jecko Development</author><license>GNU General Public License version 2 or later</license>
+  <description>PLG_CONTENT_OPGALLERY_DESCRIPTION</description>
+  <namespace path="src">OperaPlus\Plugin\Content\Gallery</namespace>
+  <files><folder plugin="operaplus_gallery">services</folder><folder>src</folder></files>
+  <media destination="plg_content_operaplus_gallery" folder="media"><folder>js</folder><folder>css</folder></media>
+  <languages>
+    <language tag="en-GB">language/en-GB/plg_content_operaplus_gallery.ini</language>
+    <language tag="en-GB">language/en-GB/plg_content_operaplus_gallery.sys.ini</language>
+    <language tag="it-IT">language/it-IT/plg_content_operaplus_gallery.ini</language>
+    <language tag="it-IT">language/it-IT/plg_content_operaplus_gallery.sys.ini</language>
+  </languages>
+</extension>
