@@ -1,13 +1,13 @@
 # Opera+ Gallery — milestone 2.0.0
 
-Storage, editor and frontend renderer implemented. Both gallery plugins are opt-in. Release 2.0.0 authorized for native backend update, gated on automated checks; manual acceptance is still in progress.
+Storage, editor and frontend renderer implemented. Both gallery plugins are opt-in. Stable release 2.0.1 published; all nine acceptance scenarios reported OK by the site owner on 2026-11-28. No implementation work remains in the approved gallery scope. See acceptance evidence and maintenance qualification below.
 
 - GAL-02 foundation: shared optimizer gallery mode always emits static WebP (including smaller originals and WebP inputs), 1920 px full and 480 px thumbnail, quality 85 by default. Native Media Manager policy unchanged.
 - GAL-03 foundation: local per-article and per-gallery random identifiers, atomic metadata, bounded photos, exclusive writes, reorder, alt text, captions and credits. Omitted photos are removed only from the private editing copy when committed; previous revisions are kept.
 - GAL-01/GAL-02: administrator editor button, multipart uploads via com_ajax, existing article and checkout checks, core.edit or owner core.edit.own, core.create on com_media, CSRF, Joomla MediaHelper policy, image MIME and size checks, per-file feedback, 2–4 columns. For new articles explicitly save as unpublished first; no automatic publication or save. Existing photo folders and metadata follow public Media Manager semantics: not confidential. Session limits: 12 active galleries, 60 photographs per gallery, bounded conversion. Storage monitoring and confidential media are site policies.
 - GAL-03: choose an existing gallery from the editor dialog to edit a separate revision; old gallery remains unchanged until native article save. Staged writes are restricted to the originating authenticated session (24-hour window, max 12 active stages); explicit cancellation discards the stage. Unfinished galleries have a persisted expiration marker; they cannot render or be forked. The maintenance CLI reports expired stages and can purge only those, never committed or legacy galleries.
 - GAL-04/GAL-05: article-only shortcode rendering bound to the current article, escaped metadata, responsive grid, native dialog lightbox with keyboard/touch navigation, fallback links, conditional assets, credits and captions.
-- GAL-06/GAL-07: native Joomla browser/runtime, installer and storage tests, editor guide, maintenance CLI and manual acceptance checklist. Release publication authorized on 2026-11-28 for backend update testing; final manual acceptance remains open. Native runtime regression exercises upgrading from a stale namespace map; the package refreshes the map through Joomla's native installer API. Provider bootstrap uses its own installed files without changing Joomla core.
+- GAL-06/GAL-07: native Joomla browser/runtime, installer and storage tests, editor guide, maintenance CLI and manual acceptance checklist. Release publication authorized on 2026-11-28 for backend update testing; manual acceptance completed on 2026-11-28 (9/9 reported OK). Native runtime regression exercises upgrading from a stale namespace map; the package refreshes the map through Joomla's native installer API. Provider bootstrap uses its own installed files without changing Joomla core.
 
 ## Guida per la redazione
 
@@ -41,7 +41,13 @@ Il comando ricontrolla lo stato sotto lock prima di eliminare. Non elimina revis
 ## Esiti collaudo manuale
 
 - 2026-11-28: GAL-T01 e GAL-T02 superati. Feedback: eliminare lo sfondo grigio delle anteprime, visualizzare il limite di peso per singola fotografia. Correzioni verificate con esito OK sulla 2.0.0.
-- 2026-11-28: GAL-T03 e GAL-T04 superati. Feedback: anteprime con altezza uniforme e gallerie centrate orizzontalmente. Correzione 2.0.1 in verifica: riquadri 4:3, ritaglio visivo centrato (senza modificare i file), righe incomplete centrate.
+- 2026-11-28: GAL-T03 e GAL-T04 superati. Feedback: anteprime con altezza uniforme e gallerie centrate orizzontalmente. Correzione 2.0.1 verificata con esito OK: riquadri 4:3, ritaglio visivo centrato (senza modificare i file), righe incomplete centrate.
+
+- 2026-11-28: GAL-T05 e GAL-T06 superati sulla 2.0.1. Anteprime uniformi e centratura delle gallerie OK; nessuna anomalia segnalata.
+
+- 2026-11-28: GAL-T07, GAL-T08 e GAL-T09 riportati OK sulla 2.0.1. Checklist accessibilità e prestazioni 8/8, nessuna anomalia segnalata.
+
+**Esito finale: 9/9 scenari accettati (100%).** La verifica manuale GAL-T08 era limitata all'audit non distruttivo: la cancellazione offline su fixture scaduta non è stata richiesta in questo lotto; la logica di scadenza e purge è coperta dai test automatici dello store. Non si attesta una cancellazione manuale effettiva sul sito. Nessun intervento distruttivo necessario per l'uso ordinario. Gli esiti sono quelli dichiarati dal collaudatore, non misurazioni indipendenti.
 
 ## Collaudo manuale finale (staging Opera+)
 
