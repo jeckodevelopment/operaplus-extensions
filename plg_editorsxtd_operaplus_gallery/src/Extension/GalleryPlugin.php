@@ -13,6 +13,8 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Helper\MediaHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\Registry\Registry;
 use Joomla\CMS\Session\Session;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseInterface;
@@ -107,6 +109,9 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
             || !is_int($file['size'] ?? null) || $file['size'] < 1 || $file['size'] > 20 * 1024 * 1024) {
             throw new \InvalidArgumentException(Text::_('PLG_OPGALLERY_INVALID_UPLOAD'));
         }
+        if (!preg_match('/^[\p{L}\p{N}][\p{L}\p{M}\p{N} _-]{0,160}\.(jpe?g|png|webp)$/iuD', $file['name'])) {
+            throw new \InvalidArgumentException(Text::_('PLG_OPGALLERY_INVALID_UPLOAD'));
+        }
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $types = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'];
         if (!isset($types[$ext])) {
@@ -116,25 +121,47 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         foreach (['image_extensions','restrict_uploads_extensions'] as $key) {
             $allowed = array_map('trim', explode(',', strtolower((string) $media->get($key, 'jpg,jpeg,png,webp'))));
             if (!in_array($ext, $allowed, true) || !in_array('webp', $allowed, true)) {
-                throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY'));
+                throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (' . $key . ')');
             }
         }
-        if (!MediaHelper::isValidLocalDirectory('images')) {
-            throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY'));
+        // Match the local filesystem provider's actual configured roots, including
+        // its defaults when the subform is absent or has not been saved.
+        $plugin = PluginHelper::getPlugin('filesystem', 'local');
+        $local = $plugin ? new Registry($plugin->params) : null;
+        $directories = $local?->get('directories', [(object) ['directory' => 'images'], (object) ['directory' => 'files']]);
+        if (is_string($directories)) {
+            $directories = json_decode($directories);
+        }
+        $hasImages = false;
+        if (is_iterable($directories)) {
+            foreach ($directories as $directory) {
+                if ((((array) $directory)['directory'] ?? null) === 'images') {
+                    $hasImages = true;
+                }
+            }
+        }
+        if (!$plugin || !$hasImages) {
+            throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (local-images)');
+        }
+        $maxSize = (int) ((float) $media->get('upload_maxsize', 0) * 1024 * 1024);
+        if ($maxSize > 0 && $file['size'] > $maxSize) {
+            throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (upload_maxsize)');
         }
         $info = @getimagesize($file['tmp_name']);
         if (!$info || ($info['mime'] ?? '') !== $types[$ext]) {
             throw new \InvalidArgumentException(Text::_('PLG_OPGALLERY_INVALID_UPLOAD'));
         }
         if ($media->get('check_mime', 1)) {
-            $allowed = array_map('trim', explode(',', strtolower((string) $media->get('upload_mime', 'image/jpeg,image/png,image/webp'))));
+            $allowed = array_map('trim', explode(',', strtolower(str_replace('\\', '', (string) $media->get('upload_mime', 'image/jpeg,image/png,image/webp')))));
             if (!in_array($types[$ext], $allowed, true) || !in_array('image/webp', $allowed, true)) {
-                throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY'));
+                throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (upload_mime)');
             }
         }
-        // Use Joomla's own filename, upload size and media validation as well.
-        if (!(new MediaHelper())->canUpload($file)) {
-            throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY'));
+        if (!MediaHelper::checkFileExtension($ext) || !MediaHelper::checkFileExtension('webp')) {
+            throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (extension)');
+        }
+        if ($media->get('check_mime', 1) && MediaHelper::getMimeType($file['tmp_name'], true) !== $types[$ext]) {
+            throw new \RuntimeException(Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (image-mime)');
         }
         $bytes = file_get_contents($file['tmp_name'], false, null, 0, 20 * 1024 * 1024 + 1);
         if ($bytes === false || strlen($bytes) !== $file['size']) {
@@ -198,7 +225,7 @@ final class GalleryPlugin extends CMSPlugin implements SubscriberInterface
         } catch (\Throwable $e) {
             $message = $e->getMessage();
             if (in_array($message, [Text::_('PLG_OPGALLERY_INVALID_UPLOAD'), Text::_('PLG_OPGALLERY_MEDIA_POLICY'),
-                Text::_('PLG_OPGALLERY_EMPTY')], true) || str_starts_with($message, Text::_('PLG_OPGALLERY_CONVERSION') . ' (')) {
+                Text::_('PLG_OPGALLERY_EMPTY')], true) || str_starts_with($message, Text::_('PLG_OPGALLERY_MEDIA_POLICY') . ' (') || str_starts_with($message, Text::_('PLG_OPGALLERY_CONVERSION') . ' (')) {
                 throw new \RuntimeException($message);
             }
             throw new \RuntimeException(Text::_('PLG_OPGALLERY_ERROR'));
